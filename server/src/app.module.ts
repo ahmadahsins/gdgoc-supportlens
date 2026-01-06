@@ -6,12 +6,14 @@ import { FirebaseModule } from './firebase/firebase.module';
 import { AuthController } from './auth/auth.controller';
 import { AuthService } from './auth/auth.service';
 import { AuthModule } from './auth/auth.module';
+import { TicketsModule } from './tickets/tickets.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     FirebaseModule,
     AuthModule,
+    TicketsModule,
   ],
   controllers: [AppController, AuthController],
   providers: [AppService, AuthService],
