@@ -48,7 +48,8 @@ export class TicketsService {
       sender: 'agent',
       message: replyDto.message,
       time: new Date().toISOString(),
-      agentName: user.email,
+      agentEmail: user.email,
+      agentRole: user.role,
     }
 
     const updateData: any = {

@@ -1,8 +1,9 @@
-import { Body, Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
-import { TicketsService } from './tickets.service';
-import { ReplyTicketDto } from './dto/reply-ticket.dto';
+import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { FirebaseAuthGuard } from 'src/auth/guards/firebase-auth/firebase-auth.guard';
-import { ICurrentUser } from 'src/common/interfaces/current-user.interface';
+import { GetUser } from 'src/common/decorators/get-user.decorator';
+import { ReplyTicketDto } from './dto/reply-ticket.dto';
+import { TicketsService } from './tickets.service';
+import * as currentUserInterface from 'src/common/interfaces/current-user.interface';
 
 @Controller('tickets')
 @UseGuards(FirebaseAuthGuard)
@@ -20,8 +21,7 @@ export class TicketsController {
   }
 
   @Post()
-  async reply(@Param('id') id: string, @Body() replyDto: ReplyTicketDto, @Req() req: any) {
-    const user = req.user as ICurrentUser;
+  async reply(@Param('id') id: string, @Body() replyDto: ReplyTicketDto, @GetUser() user: currentUserInterface.ICurrentUser) {
     return this.ticketsService.reply(id, replyDto, user);
   }
 }
