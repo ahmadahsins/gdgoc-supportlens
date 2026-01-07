@@ -98,4 +98,25 @@ export class TicketsService {
     
     return { success: true };
   } 
+
+  async summarize(id: string) {
+    const ticketRef = this.firestore.collection('tickets').doc(id);
+    const ticketDoc = await ticketRef.get();
+
+    if (!ticketDoc.exists) {
+      throw new NotFoundException('Ticket not found');
+    }
+
+    const ticketData = ticketDoc.data();
+    const messages = ticketData?.messages || [];
+
+    if (messages.length == 0) {
+      return { summary: 'Belum ada percakapan.' }
+    }
+
+    const summary = await this.geminiService.summarizeConversation(messages);
+
+    await ticketRef.update({ 'aiAnalysis.summary': summary });
+    return { summary };
+  }
 }

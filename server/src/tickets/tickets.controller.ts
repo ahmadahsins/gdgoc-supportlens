@@ -27,9 +27,15 @@ export class TicketsController {
     return this.ticketsService.findOne(id);
   }
 
-  @Post()
+  @Post(':id/reply')
   @UseGuards(FirebaseAuthGuard)
   async reply(@Param('id') id: string, @Body() replyDto: ReplyTicketDto, @GetUser() user: currentUserInterface.ICurrentUser) {
     return this.ticketsService.reply(id, replyDto, user);
+  }
+
+  @Post(':id/summarize')
+  @UseGuards(FirebaseAuthGuard)
+  async summarize(@Param('id') id: string) {
+    return this.ticketsService.summarize(id);
   }
 }

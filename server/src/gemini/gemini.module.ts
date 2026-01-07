@@ -1,8 +1,9 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { GeminiService } from './gemini.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GoogleGenAI } from '@google/genai';
 
+@Global()
 @Module({
   imports: [ConfigModule],
   providers: [

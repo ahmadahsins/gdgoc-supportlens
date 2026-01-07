@@ -67,7 +67,7 @@ export class GeminiService {
     try {
       const response = await this.ai.models.generateContent({
         model: this.MODEL_NAME,
-        contents: prompt,
+        contents: [{ role: 'user', parts: [{ text: prompt + `\nMessage: "${message}"` }] }],
         config: {
           responseMimeType: 'application/json',
           responseSchema: analysisSchema,
@@ -85,8 +85,40 @@ export class GeminiService {
         category: 'Other',
         sentiment: 'Neutral',
         urgencyScore: 5,
-        summary: 'Gagal menganalisis tiket secara otomatis.',
+        summary: 'Auto-analysis failed via Gemini.',
       };    
+    }
+  }
+
+  async summarizeConversation(messages: Array<{ sender: string, message: string }> ): Promise<string> {
+    const formattedMessages = messages.map((m) => `${m.sender.toUpperCase()}: ${m.message}`).join('\n');
+    
+    const prompt = `
+    Kamu adalah AI Customer Support Assistant. Buatlah ringkasan dari percakapan customer support berikut.
+    PERCAKAPAN:
+    """
+    ${formattedMessages}
+    """
+    INSTRUKSI:
+    - Buat ringkasan dalam Bahasa Indonesia
+    - Maksimal 3-4 kalimat
+    - Fokus pada inti masalah dan status penyelesaian
+    - Jangan gunakan format list/bullet
+    `;
+
+    try {
+      const response = await this.ai.models.generateContent({
+        model: this.MODEL_NAME,
+        contents: [{ role: 'user', parts: [{ text: prompt}] }],
+        config: {
+          maxOutputTokens: 500,
+        }
+      });
+
+      return response.text || 'Auto-summary failed via Gemini.';
+    } catch (error) {
+      this.logger.error(`Error summarizing conversation: ${error.message}`);
+      return 'Auto-summary failed via Gemini.';
     }
   }
 }
