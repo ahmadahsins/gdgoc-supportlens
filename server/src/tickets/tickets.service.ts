@@ -3,10 +3,44 @@ import { ReplyTicketDto } from './dto/reply-ticket.dto';
 import * as admin from 'firebase-admin';
 import { firestore as FirebaseFirestore } from 'firebase-admin';
 import { ICurrentUser } from 'src/common/interfaces/current-user.interface';
+import { GeminiService, TicketAnalysis } from 'src/gemini/gemini.service';
+import { CreateTicketDto } from './dto/create-ticket-dto';
 
 @Injectable()
 export class TicketsService {
-  constructor(@Inject('FIRESTORE') private firestore: FirebaseFirestore.Firestore) { }
+  constructor(@Inject('FIRESTORE') private firestore: FirebaseFirestore.Firestore, private readonly geminiService: GeminiService) { }
+
+  async create(createTicketDto: CreateTicketDto) {
+    const aiAnalysis: TicketAnalysis = await this.geminiService.analyzeTicket(createTicketDto.message);
+
+    const ticketData = {
+      senderName: createTicketDto.name,
+      senderEmail: createTicketDto.email,
+      initialMessage: createTicketDto.message,
+      status: 'OPEN',
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      aiAnalysis: {
+        category: aiAnalysis.category,
+        sentiment: aiAnalysis.sentiment,
+        urgencyScore: aiAnalysis.urgencyScore,
+        summary: aiAnalysis.summary,
+      },
+      messages: [
+        {
+          sender: 'customer',
+          message: createTicketDto.message,
+          time: new Date().toISOString(),
+        }
+      ]
+    };
+
+    const docRef = await this.firestore.collection('tickets').add(ticketData);
+
+    return {
+      ticketId: docRef.id,
+      ai_analysis: aiAnalysis,
+    }
+  }
   
   async findAll(status?: string) {
     let query: FirebaseFirestore.Query = this.firestore.collection('tickets');
