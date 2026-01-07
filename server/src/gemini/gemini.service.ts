@@ -8,6 +8,11 @@ export interface TicketAnalysis {
   summary: string;
 }
 
+export interface DraftResponse {
+  draftReply: string;
+  sourceDocument?: string;
+}
+
 @Injectable()
 export class GeminiService {
   private readonly logger = new Logger(GeminiService.name);
@@ -17,17 +22,20 @@ export class GeminiService {
   
   async analyzeTicket(message: string): Promise<TicketAnalysis> {
     const prompt = `
-    Kamu adalah AI Customer Support Analyst. Analisis pesan keluhan customer berikut dan berikan output dalam format JSON yang ketat.
-    PESAN CUSTOMER:
+    You are an AI Customer Support Analyst. Analyze the following customer complaint message and provide output in strict JSON format.
+    
+    CUSTOMER MESSAGE:
     """
     ${message}
     """
-    INSTRUKSI:
-    1. Tentukan KATEGORI isu dari opsi berikut: "Technical Issue", "Billing Issue", "Account Issue", "General Inquiry", "Feature Request", "Other"
-    2. Tentukan SENTIMEN dari opsi: "Positive", "Neutral", "Negative"
-    3. Berikan URGENCY SCORE dari 1-10 (10 = sangat urgent/darurat)
-    4. Buat SUMMARY singkat maksimal 2 kalimat dalam Bahasa Indonesia
-    Berikan response dalam format JSON sesuai schema yang diberikan.
+    
+    INSTRUCTIONS:
+    1. Determine the CATEGORY of the issue from the following options: "Technical Issue", "Billing Issue", "Account Issue", "General Inquiry", "Feature Request", "Other"
+    2. Determine the SENTIMENT from the options: "Positive", "Neutral", "Negative"
+    3. Provide an URGENCY SCORE from 1-10 (10 = very urgent/emergency)
+    4. Create a brief SUMMARY in maximum 2 sentences in Indonesian (Bahasa Indonesia)
+    
+    Provide the response in JSON format according to the given schema.
     `;
     
     const analysisSchema = {
@@ -94,31 +102,72 @@ export class GeminiService {
     const formattedMessages = messages.map((m) => `${m.sender.toUpperCase()}: ${m.message}`).join('\n');
     
     const prompt = `
-    Kamu adalah AI Customer Support Assistant. Buatlah ringkasan dari percakapan customer support berikut.
-    PERCAKAPAN:
+    You are an AI Customer Support Assistant. Create a summary of the following customer support conversation.
+    
+    CONVERSATION:
     """
     ${formattedMessages}
     """
-    INSTRUKSI:
-    - Buat ringkasan dalam Bahasa Indonesia
-    - Maksimal 3-4 kalimat
-    - Fokus pada inti masalah dan status penyelesaian
-    - Jangan gunakan format list/bullet
+    
+    INSTRUCTIONS:
+    - Write the summary in Indonesian (Bahasa Indonesia)
+    - Maximum 3-4 sentences
+    - Focus on the core issue and resolution status
+    - Do not use list/bullet format
     `;
 
     try {
       const response = await this.ai.models.generateContent({
         model: this.MODEL_NAME,
         contents: [{ role: 'user', parts: [{ text: prompt}] }],
-        config: {
-          maxOutputTokens: 500,
-        }
       });
 
       return response.text || 'Auto-summary failed via Gemini.';
     } catch (error) {
       this.logger.error(`Error summarizing conversation: ${error.message}`);
       return 'Auto-summary failed via Gemini.';
+    }
+  }
+
+  async generateDraftReply(contextMessage: string, previousMessages?: Array<{ sender: string, message: string }>): Promise<DraftResponse> {
+    let conversationContext = "";
+    if (previousMessages && previousMessages.length > 0) {
+      conversationContext = previousMessages.map((m) => `${m.sender.toUpperCase()}: ${m.message}`).join('\n');
+    }
+
+    const prompt = `
+    You are a friendly and professional AI Customer Support Agent.
+    Your task is to create a draft reply for the customer's message.
+    
+    ${conversationContext ? `CONVERSATION HISTORY:\n"""\n${conversationContext}\n"""\n` : ''}
+    LATEST CUSTOMER MESSAGE:
+    """
+    ${contextMessage}
+    """
+    
+    INSTRUCTIONS:
+    - Write a polite, empathetic, and solution-oriented reply in Indonesian (Bahasa Indonesia)
+    - Use professional yet friendly language
+    - If there is a technical issue, ask for more information needed
+    - End with a question or offer of assistance
+    - Reply length should be 2-4 sentences
+    `;
+
+    try {
+      const response = await this.ai.models.generateContent({
+        model: this.MODEL_NAME,
+        contents: [{ role: 'user', parts: [{ text: prompt}] }],
+      });
+
+      return {
+        draftReply: response.text || 'Tidak dapat membuat draf balasan.',
+        sourceDocument: undefined
+      };
+    } catch (error) {
+      this.logger.error(`Error generating draft reply: ${error.message}`);
+      return {
+        draftReply: 'Maaf, gagal membuat saran balasan. Silakan tulis balasan manual.'
+      };
     }
   }
 }

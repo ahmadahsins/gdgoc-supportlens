@@ -14,8 +14,8 @@ export class TicketsService {
     const aiAnalysis: TicketAnalysis = await this.geminiService.analyzeTicket(createTicketDto.message);
 
     const ticketData = {
-      senderName: createTicketDto.name,
-      senderEmail: createTicketDto.email,
+      senderName: createTicketDto.name || '',
+      senderEmail: createTicketDto.email || '',
       initialMessage: createTicketDto.message,
       status: 'OPEN',
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -82,8 +82,8 @@ export class TicketsService {
       sender: 'agent',
       message: replyDto.message,
       time: new Date().toISOString(),
-      agentEmail: user.email,
-      agentRole: user.role,
+      agentEmail: user?.email || 'test@agent.com',
+      agentRole: user?.role || 'agent',
     }
 
     const updateData: any = {
@@ -104,7 +104,7 @@ export class TicketsService {
     const ticketDoc = await ticketRef.get();
 
     if (!ticketDoc.exists) {
-      throw new NotFoundException('Ticket not found');
+      throw new NotFoundException('Ticket tidak ditemukan');
     }
 
     const ticketData = ticketDoc.data();
@@ -118,5 +118,23 @@ export class TicketsService {
 
     await ticketRef.update({ 'aiAnalysis.summary': summary });
     return { summary };
+  }
+
+  async generateDraft(id: string, contextMessage: string) {
+    const ticketDoc = await this.firestore.collection('tickets').doc(id).get();
+
+    if (!ticketDoc.exists) {
+      throw new NotFoundException('Ticket tidak ditemukan');
+    }
+
+    const ticketData = ticketDoc.data();
+    const previousMessages = ticketData?.messages || [];
+
+    const draft = await this.geminiService.generateDraftReply(
+      contextMessage,
+      previousMessages
+    );
+
+    return draft;
   }
 }

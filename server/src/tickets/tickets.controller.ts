@@ -5,6 +5,7 @@ import { ReplyTicketDto } from './dto/reply-ticket.dto';
 import { TicketsService } from './tickets.service';
 import * as currentUserInterface from 'src/common/interfaces/current-user.interface';
 import { CreateTicketDto } from './dto/create-ticket-dto';
+import { GenerateDraftDto } from './dto/generate-draft.dto';
 
 @Controller('tickets')
 export class TicketsController {
@@ -37,5 +38,11 @@ export class TicketsController {
   @UseGuards(FirebaseAuthGuard)
   async summarize(@Param('id') id: string) {
     return this.ticketsService.summarize(id);
+  }
+
+  @Post(':id/generate-draft')
+  @UseGuards(FirebaseAuthGuard)
+  async generateDraft(@Param('id') id: string, @Body() generateDraftDto: GenerateDraftDto) {
+    return this.ticketsService.generateDraft(id, generateDraftDto.contextMessage);
   }
 }
