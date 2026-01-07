@@ -3,10 +3,44 @@ import { ReplyTicketDto } from './dto/reply-ticket.dto';
 import * as admin from 'firebase-admin';
 import { firestore as FirebaseFirestore } from 'firebase-admin';
 import { ICurrentUser } from 'src/common/interfaces/current-user.interface';
+import { GeminiService, TicketAnalysis } from 'src/gemini/gemini.service';
+import { CreateTicketDto } from './dto/create-ticket-dto';
 
 @Injectable()
 export class TicketsService {
-  constructor(@Inject('FIRESTORE') private firestore: FirebaseFirestore.Firestore) { }
+  constructor(@Inject('FIRESTORE') private firestore: FirebaseFirestore.Firestore, private readonly geminiService: GeminiService) { }
+
+  async create(createTicketDto: CreateTicketDto) {
+    const aiAnalysis: TicketAnalysis = await this.geminiService.analyzeTicket(createTicketDto.message);
+
+    const ticketData = {
+      senderName: createTicketDto.name || '',
+      senderEmail: createTicketDto.email || '',
+      initialMessage: createTicketDto.message,
+      status: 'OPEN',
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      aiAnalysis: {
+        category: aiAnalysis.category,
+        sentiment: aiAnalysis.sentiment,
+        urgencyScore: aiAnalysis.urgencyScore,
+        summary: aiAnalysis.summary,
+      },
+      messages: [
+        {
+          sender: 'customer',
+          message: createTicketDto.message,
+          time: new Date().toISOString(),
+        }
+      ]
+    };
+
+    const docRef = await this.firestore.collection('tickets').add(ticketData);
+
+    return {
+      ticketId: docRef.id,
+      ai_analysis: aiAnalysis,
+    }
+  }
   
   async findAll(status?: string) {
     let query: FirebaseFirestore.Query = this.firestore.collection('tickets');
@@ -48,8 +82,8 @@ export class TicketsService {
       sender: 'agent',
       message: replyDto.message,
       time: new Date().toISOString(),
-      agentEmail: user.email,
-      agentRole: user.role,
+      agentEmail: user?.email || 'test@agent.com',
+      agentRole: user?.role || 'agent',
     }
 
     const updateData: any = {
@@ -64,4 +98,43 @@ export class TicketsService {
     
     return { success: true };
   } 
+
+  async summarize(id: string) {
+    const ticketRef = this.firestore.collection('tickets').doc(id);
+    const ticketDoc = await ticketRef.get();
+
+    if (!ticketDoc.exists) {
+      throw new NotFoundException('Ticket tidak ditemukan');
+    }
+
+    const ticketData = ticketDoc.data();
+    const messages = ticketData?.messages || [];
+
+    if (messages.length == 0) {
+      return { summary: 'Belum ada percakapan.' }
+    }
+
+    const summary = await this.geminiService.summarizeConversation(messages);
+
+    await ticketRef.update({ 'aiAnalysis.summary': summary });
+    return { summary };
+  }
+
+  async generateDraft(id: string, contextMessage: string) {
+    const ticketDoc = await this.firestore.collection('tickets').doc(id).get();
+
+    if (!ticketDoc.exists) {
+      throw new NotFoundException('Ticket tidak ditemukan');
+    }
+
+    const ticketData = ticketDoc.data();
+    const previousMessages = ticketData?.messages || [];
+
+    const draft = await this.geminiService.generateDraftReply(
+      contextMessage,
+      previousMessages
+    );
+
+    return draft;
+  }
 }

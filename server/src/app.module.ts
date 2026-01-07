@@ -7,6 +7,7 @@ import { AuthController } from './auth/auth.controller';
 import { AuthService } from './auth/auth.service';
 import { AuthModule } from './auth/auth.module';
 import { TicketsModule } from './tickets/tickets.module';
+import { GeminiModule } from './gemini/gemini.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { TicketsModule } from './tickets/tickets.module';
     FirebaseModule,
     AuthModule,
     TicketsModule,
+    GeminiModule,
   ],
   controllers: [AppController, AuthController],
   providers: [AppService, AuthService],
