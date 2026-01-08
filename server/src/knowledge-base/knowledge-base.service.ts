@@ -1,4 +1,139 @@
-import { Injectable } from '@nestjs/common';
+import { GoogleGenAI } from '@google/genai';
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { Index, Pinecone, RecordMetadata } from '@pinecone-database/pinecone';
+import { firestore as FirebaseFirestore } from 'firebase-admin';
+import pdfParse from 'pdf-parse';
+import { GeminiService } from 'src/gemini/gemini.service';
+
+interface SOPMetadata extends RecordMetadata {
+  source: string;
+  text: string;
+  chunkIndex: number;
+}
 
 @Injectable()
-export class KnowledgeBaseService {}
+export class KnowledgeBaseService {
+  private readonly logger = new Logger(KnowledgeBaseService.name);
+  private readonly indexName: string;
+  private readonly namespace = 'sops';
+  private readonly chunkSize = 1000;
+  private readonly chunkOverlap = 200;
+
+  constructor(
+    @Inject('PINECONE_CLIENT') private readonly pinecone: Pinecone,
+    @Inject('FIRESTORE') private readonly firestore: FirebaseFirestore.Firestore,
+    private readonly configService: ConfigService,
+    private readonly geminiService: GeminiService,
+  ) {
+    this.indexName = this.configService.get<string>('PINECONE_INDEX_NAME') || 'supportlens-kb';
+  }
+
+  // get pinecone index instance
+  private getIndex(): Index<SOPMetadata> {
+    return this.pinecone.index<SOPMetadata>(this.indexName);
+  }
+
+  // generate embedding using gemini embedding API
+
+  // split text to chunks with overlap
+  private splitTextIntoChunks(text: string): string[] {
+    const chunks: string[] = [];
+    let startIndex = 0;
+    const cleanText = text.replace(/\s+/g, ' ').trim();
+    while (startIndex < cleanText.length) {
+      let endIndex = startIndex + this.chunkSize;
+
+      if (endIndex < cleanText.length) {
+        const lastPeriod = cleanText.lastIndexOf('.', endIndex);
+        const lastNewline = cleanText.lastIndexOf('\n', endIndex);
+        const breakPoint = Math.max(lastPeriod, lastNewline);
+        if (breakPoint > startIndex + this.chunkSize / 2) {
+          endIndex = breakPoint + 1;
+        }
+      }
+      const chunk = cleanText.slice(startIndex, endIndex).trim();
+      if (chunk.length > 0) {
+        chunks.push(chunk);
+      }
+      startIndex = endIndex - this.chunkOverlap;
+      if (startIndex >= cleanText.length) break;
+    }
+    return chunks;
+  }
+
+  async parsePDF(buffer: Buffer): Promise<string> {
+    try {
+      const data = await pdfParse(buffer);
+      return data.text;
+    } catch (error) {
+      this.logger.error(`Error parsing PDF: ${error.message}`);
+      throw new Error('Failed to parse PDF file');
+    }
+  }
+
+  async uploadDocument(
+    file: Express.Multer.File
+  ): Promise<{ status: string; chunks: number; filename: string}> {
+    const filename = file.originalname;
+    this.logger.log(`Processing document: ${filename}`);
+
+    try {
+      // 1. parse pdf to text
+      const text = await this.parsePDF(file.buffer);
+      this.logger.debug(`Extracted ${text.length} characters from PDF`);
+
+      // 2. split text to chunks
+      const chunks = this.splitTextIntoChunks(text);
+      this.logger.log(`Split into ${chunks.length} chunks`);
+
+      // 3. generate embeddings and prepare vectors to upsert
+      const index = this.getIndex();
+      const vectors: Array<{ id: string, values: number[], metadata: SOPMetadata }> = [];
+
+      for (let i = 0; i < chunks.length; i++) {
+        const chunk = chunks[i];
+        const embedding = await this.geminiService.generateEmbedding(chunk);
+
+        vectors.push({
+          id: `${filename.replace(/[^a-zA-Z0-9]/g, '_')}_chunk_${i}`,
+          values: embedding,
+          metadata: {
+            source: filename,
+            text: chunk,
+            chunkIndex: i
+          }
+        });
+
+        if ((i + 1) % 5 == 0) {
+          this.logger.debug(`Processed ${i + 1}/${chunks.length} chunks`);
+        }
+      }
+
+      // 4. upsert vectors to pinecone
+      const batchSize = 100;
+      for (let i = 0; i < vectors.length; i += batchSize) {
+        const batch = vectors.slice(i, i + batchSize);
+        await index.namespace(this.namespace).upsert(batch);
+      }
+      this.logger.log(`Successfully indexed ${vectors.length} vectors for ${filename}`);
+
+      // 5. save metadata document to firestore
+      await this.firestore.collection('knowledge_base').add({
+        filename: filename,
+        uploadedAt: new Date().toISOString(),
+        chunksCount: chunks.length,
+        status: 'indexed',
+      });
+
+      return {
+        status: 'indexed',
+        chunks: chunks.length,
+        filename: filename,
+      }
+    } catch (error) {
+      this.logger.error(`Error uploading document: ${error.message}`);
+      throw error;
+    }    
+  }
+}

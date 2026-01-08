@@ -17,6 +17,7 @@ export interface DraftResponse {
 export class GeminiService {
   private readonly logger = new Logger(GeminiService.name);
   private readonly MODEL_NAME = 'gemini-2.5-flash';
+  private readonly embeddingModel = 'gemini-embedding-001';
 
   constructor(@Inject('GEMINI_CLIENT') private readonly ai: GoogleGenAI) { }
   
@@ -75,7 +76,7 @@ export class GeminiService {
     try {
       const response = await this.ai.models.generateContent({
         model: this.MODEL_NAME,
-        contents: [{ role: 'user', parts: [{ text: prompt + `\nMessage: "${message}"` }] }],
+        contents: prompt,
         config: {
           responseMimeType: 'application/json',
           responseSchema: analysisSchema,
@@ -119,7 +120,7 @@ export class GeminiService {
     try {
       const response = await this.ai.models.generateContent({
         model: this.MODEL_NAME,
-        contents: [{ role: 'user', parts: [{ text: prompt}] }],
+        contents: prompt,
       });
 
       return response.text || 'Auto-summary failed via Gemini.';
@@ -156,7 +157,7 @@ export class GeminiService {
     try {
       const response = await this.ai.models.generateContent({
         model: this.MODEL_NAME,
-        contents: [{ role: 'user', parts: [{ text: prompt}] }],
+        contents: prompt,
       });
 
       return {
@@ -168,6 +169,31 @@ export class GeminiService {
       return {
         draftReply: 'Maaf, gagal membuat saran balasan. Silakan tulis balasan manual.'
       };
+    }
+  }
+
+    async generateEmbedding(text: string): Promise<number[]> {
+    try {
+      const response = await this.ai.models.embedContent({
+        model: this.embeddingModel,
+        contents: text,
+        config: {
+          outputDimensionality: 768,
+        },
+      })
+
+      if (response.embeddings && response.embeddings.length > 0) {
+        const values = response.embeddings[0].values;
+        if (!values) {
+          throw new Error('Embedding values are undefined');
+        }
+        return values;
+      }
+
+      throw new Error('No embeddings returned from Gemini');
+    } catch (error) {
+      this.logger.error(`Error generating embedding: ${error.message}`);
+      throw error;
     }
   }
 }
