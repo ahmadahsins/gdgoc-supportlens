@@ -1,5 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import { RAGContext } from 'src/knowledge-base/knowledge-base.service';
 
 export interface TicketAnalysis {
   category: string;
@@ -8,9 +9,10 @@ export interface TicketAnalysis {
   summary: string;
 }
 
-export interface DraftResponse {
+export interface RAGDraftResponse  {
   draftReply: string;
-  sourceDocument?: string;
+  sourceDocuments?: string[];
+  relevantContextUsed: boolean;
 }
 
 @Injectable()
@@ -130,15 +132,30 @@ export class GeminiService {
     }
   }
 
-  async generateDraftReply(contextMessage: string, previousMessages?: Array<{ sender: string, message: string }>): Promise<DraftResponse> {
+  async generateDraftReply(contextMessage: string, ragContext: RAGContext, previousMessages?: Array<{ sender: string, message: string }>): Promise<RAGDraftResponse > {
     let conversationContext = "";
     if (previousMessages && previousMessages.length > 0) {
       conversationContext = previousMessages.map((m) => `${m.sender.toUpperCase()}: ${m.message}`).join('\n');
     }
 
+    let knowledgeBaseContext = '';
+    if (ragContext.relevantChunks.length > 0) {
+      knowledgeBaseContext = ragContext.relevantChunks.map((chunk, i) => `[Source: ${chunk.source}]\n${chunk.text}`)
+      .join('\n\n---\n\n');
+    }
+
     const prompt = `
     You are a friendly and professional AI Customer Support Agent.
     Your task is to create a draft reply for the customer's message.
+
+    ${knowledgeBaseContext ? `
+    IMPORTANT: Use the following KNOWLEDGE BASE CONTEXT to inform your response.
+    These are excerpts from company SOP documents that are relevant to the customer's inquiry.
+    KNOWLEDGE BASE CONTEXT:
+    """
+    ${knowledgeBaseContext}
+    """
+    ` : ''}
     
     ${conversationContext ? `CONVERSATION HISTORY:\n"""\n${conversationContext}\n"""\n` : ''}
     LATEST CUSTOMER MESSAGE:
@@ -148,10 +165,13 @@ export class GeminiService {
     
     INSTRUCTIONS:
     - Write a polite, empathetic, and solution-oriented reply in Indonesian (Bahasa Indonesia)
+    - ${knowledgeBaseContext ? 'BASE YOUR ANSWER ON THE KNOWLEDGE BASE CONTEXT provided above when applicable' : 'Provide general assistance'}
     - Use professional yet friendly language
+    - If the knowledge base contains relevant procedures or policies, reference them
     - If there is a technical issue, ask for more information needed
     - End with a question or offer of assistance
-    - Reply length should be 2-4 sentences
+    - Reply length should be 2-5 sentences
+    - Do NOT make up information not present in the knowledge base
     `;
 
     try {
@@ -162,17 +182,20 @@ export class GeminiService {
 
       return {
         draftReply: response.text || 'Tidak dapat membuat draf balasan.',
-        sourceDocument: undefined
+        sourceDocuments: ragContext.sourceDocuments,
+        relevantContextUsed: ragContext.relevantChunks.length > 0,
       };
     } catch (error) {
       this.logger.error(`Error generating draft reply: ${error.message}`);
       return {
-        draftReply: 'Maaf, gagal membuat saran balasan. Silakan tulis balasan manual.'
+        draftReply: 'Maaf, gagal membuat saran balasan. Silakan tulis balasan manual.',
+        sourceDocuments: [],
+        relevantContextUsed: false,
       };
     }
   }
 
-    async generateEmbedding(text: string): Promise<number[]> {
+  async generateEmbedding(text: string): Promise<number[]> {
     try {
       const response = await this.ai.models.embedContent({
         model: this.embeddingModel,

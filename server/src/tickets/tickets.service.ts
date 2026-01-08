@@ -5,10 +5,11 @@ import { firestore as FirebaseFirestore } from 'firebase-admin';
 import { ICurrentUser } from 'src/common/interfaces/current-user.interface';
 import { GeminiService, TicketAnalysis } from 'src/gemini/gemini.service';
 import { CreateTicketDto } from './dto/create-ticket-dto';
+import { KnowledgeBaseService } from 'src/knowledge-base/knowledge-base.service';
 
 @Injectable()
 export class TicketsService {
-  constructor(@Inject('FIRESTORE') private firestore: FirebaseFirestore.Firestore, private readonly geminiService: GeminiService) { }
+  constructor(@Inject('FIRESTORE') private firestore: FirebaseFirestore.Firestore, private readonly geminiService: GeminiService, private readonly knowledgeBaseService: KnowledgeBaseService) { }
 
   async create(createTicketDto: CreateTicketDto) {
     const aiAnalysis: TicketAnalysis = await this.geminiService.analyzeTicket(createTicketDto.message);
@@ -130,11 +131,19 @@ export class TicketsService {
     const ticketData = ticketDoc.data();
     const previousMessages = ticketData?.messages || [];
 
+    const ragContext = await this.knowledgeBaseService.queryRelevanContext(contextMessage, 5);
+
     const draft = await this.geminiService.generateDraftReply(
       contextMessage,
+      ragContext,
       previousMessages
     );
 
-    return draft;
+    return {
+      draftReply: draft.draftReply,
+      sourceDocument: draft.sourceDocuments && draft.sourceDocuments?.length > 0 ? draft.sourceDocuments[0] : undefined,
+      sourceDocuments: draft.sourceDocuments,
+      ragContextUsed: draft.relevantContextUsed,
+    };
   }
 }

@@ -1,4 +1,3 @@
-import { GoogleGenAI } from '@google/genai';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Index, Pinecone, RecordMetadata } from '@pinecone-database/pinecone';
@@ -10,6 +9,15 @@ interface SOPMetadata extends RecordMetadata {
   source: string;
   text: string;
   chunkIndex: number;
+}
+
+export interface RAGContext {
+  relevantChunks: Array<{
+    text: string,
+    source: string;
+    score: number,
+  }>,
+  sourceDocuments: string[],
 }
 
 @Injectable()
@@ -136,4 +144,39 @@ export class KnowledgeBaseService {
       throw error;
     }    
   }
+
+  // query pinecone for RAG
+  async queryRelevanContext(query: string, topK: number = 5): Promise<RAGContext> {
+    try {
+      const queryEmbedding = await this.geminiService.generateEmbedding(query);
+
+      const index = this.getIndex();
+      const queryResponse = await index.namespace(this.namespace).query({
+        vector: queryEmbedding,
+        topK: topK,
+        includeMetadata: true,
+      });
+
+      const relevantChunks = queryResponse.matches?.map((match) => ({
+        text: match.metadata?.text || '',
+        source: match.metadata?.source || 'unknown',
+        score: match.score || 0,
+      }));
+
+      const sourceDocuments = [...new Set(relevantChunks.map((c) => c.source))];
+      
+      this.logger.debug(`Found ${relevantChunks.length} relevant chunks from ${sourceDocuments.length} documents`);
+
+      return {
+        relevantChunks,
+        sourceDocuments
+      }
+    } catch (error) {
+      this.logger.error(`Error querying Pinecone: ${error.message}`);
+      return {
+        relevantChunks: [],
+        sourceDocuments: [],
+      }
+    }
+  } 
 }
