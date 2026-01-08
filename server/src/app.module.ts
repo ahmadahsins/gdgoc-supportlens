@@ -9,6 +9,7 @@ import { FirebaseModule } from './firebase/firebase.module';
 import { GeminiModule } from './gemini/gemini.module';
 import { TicketsModule } from './tickets/tickets.module';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { KnowledgeBaseModule } from './knowledge-base/knowledge-base.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
     TicketsModule,
     GeminiModule,
     AnalyticsModule,
+    KnowledgeBaseModule,
   ],
   controllers: [AppController, AuthController],
   providers: [AppService, AuthService],
