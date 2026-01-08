@@ -102,9 +102,11 @@ export class KnowledgeBaseService {
       for (let i = 0; i < chunks.length; i++) {
         const chunk = chunks[i];
         const embedding = await this.geminiService.generateEmbedding(chunk);
+        
+        const prefix = filename.replace(/[^a-zA-Z0-9]/g, '_')
 
         vectors.push({
-          id: `${filename.replace(/[^a-zA-Z0-9]/g, '_')}_chunk_${i}`,
+          id: `${prefix}_chunk_${i}`,
           values: embedding,
           metadata: {
             source: filename,
@@ -179,4 +181,60 @@ export class KnowledgeBaseService {
       }
     }
   } 
+
+    async listDocuments(): Promise<Array<{
+    id: string;
+    filename: string;
+    uploadedAt: string;
+    chunksCount: number;
+    status: string;
+  }>> {
+    const snapshot = await this.firestore.collection('knowledge_base').orderBy('uploadedAt', 'desc').get();
+
+    return snapshot.docs.map((doc) => ({
+      id: doc.id,
+      filename: doc.data().filename,
+      uploadedAt: doc.data().uploadedAt,
+      chunksCount: doc.data().chunksCount,
+      status: doc.data().status,
+    }));
+  }
+
+  async deleteDocument(documentId: string) {
+    try {
+      const docRef = this.firestore.collection('knowledge_base').doc(documentId);
+      const doc = await docRef.get();
+
+      if (!doc.exists) {
+        throw new Error('Document not found');
+      }
+
+      const filename = doc.data()?.filename;
+      const chunksCount = doc.data()?.chunksCount || 0;
+
+      const index = this.getIndex();
+      const prefix = filename.replace(/[^a-zA-Z0-9]/g, '_');
+
+      // generate all vector IDs based on the naming convention used during upload
+      const vectorIds: string[] = [];
+      for (let i = 0; i < chunksCount; i++) {
+        vectorIds.push(`${prefix}_chunk_${i}`);
+      }
+
+      // delete vectors by IDs
+      if (vectorIds.length > 0) {
+        await index.namespace(this.namespace).deleteMany(vectorIds);
+      }
+
+      // delete from firestore
+      await docRef.delete();
+
+      this.logger.log(`Deleted document: ${filename} (${vectorIds.length} vectors)`);
+
+      return { success: true };
+    } catch (error) {
+      this.logger.error(`Error deleting document: ${error.message}`);
+      throw error;
+    }
+  }
 }

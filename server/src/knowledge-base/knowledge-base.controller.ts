@@ -1,17 +1,17 @@
-import { Controller, ForbiddenException, Post, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Controller, Delete, Get, Param, Post, UploadedFile, UseGuards, UseInterceptors, BadRequestException } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { GetUser } from 'src/common/decorators/get-user.decorator';
-import * as currentUserInterface from 'src/common/interfaces/current-user.interface';
 import { KnowledgeBaseService } from './knowledge-base.service';
 import { FirebaseAuthGuard } from 'src/auth/guards/firebase-auth/firebase-auth.guard';
-
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { AdminOnly } from 'src/auth/decorators/roles.decorator';
 
 @Controller('knowledge-base')
-@UseGuards(FirebaseAuthGuard)
+@UseGuards(FirebaseAuthGuard, RolesGuard) 
 export class KnowledgeBaseController {
-  constructor(private readonly knowledgeBaseService: KnowledgeBaseService) { }
-  
+  constructor(private readonly knowledgeBaseService: KnowledgeBaseService) {}
+
   @Post('upload')
+  @AdminOnly()
   @UseInterceptors(
     FileInterceptor('file', {
       limits: {
@@ -22,23 +22,26 @@ export class KnowledgeBaseController {
           callback(new Error('Only PDF files are allowed'), false);
         }
         callback(null, true);
-      }
-    })
+      },
+    }),
   )
-  async uploadDocument(
-    @UploadedFile() file: Express.Multer.File,
-    @GetUser() user: currentUserInterface.ICurrentUser,
-  ) {
-    if (user.role !== 'admin') {
-      throw new ForbiddenException(
-        'Akses ditolak. Hanya admin yang dapat mengupload dokumen.',
-      );
-    }
-
+  async uploadDocument(@UploadedFile() file: Express.Multer.File) {
     if (!file) {
-      throw new Error('No file uploaded');
+      throw new BadRequestException('No file uploaded');
     }
 
     return this.knowledgeBaseService.uploadDocument(file);
+  }
+
+  @Get()
+  @AdminOnly()
+  async listDocuments() {
+    return this.knowledgeBaseService.listDocuments();
+  }
+
+  @Delete(':id')
+  @AdminOnly()
+  async deleteDocument(@Param('id') id: string) {
+    return this.knowledgeBaseService.deleteDocument(id);
   }
 }
