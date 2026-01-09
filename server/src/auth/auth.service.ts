@@ -1,20 +1,20 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { firestore as FirebaseFirestore } from 'firebase-admin';
-import { DecodedIdToken } from 'firebase-admin/auth';
+import { ICurrentUser } from 'src/common/interfaces/current-user.interface';
 
 @Injectable()
 export class AuthService {
   constructor(@Inject('FIRESTORE') private firestore: FirebaseFirestore.Firestore) {}
   
-  async syncUser(decodedToken: DecodedIdToken) {
-    const userRef = this.firestore.collection('users').doc(decodedToken.uid);
+  async syncUser(user: ICurrentUser) {
+    const userRef = this.firestore.collection('users').doc(user.uid);
     const doc = await userRef.get();
 
     if (!doc.exists) {
       const newUser = {
-        uid: decodedToken.uid,
-        email: decodedToken.email,
-        role: 'agent',
+        uid: user.uid,
+        email: user.email,
+        role: user.role,
         createdAt: new Date().toISOString(),
       };
 
