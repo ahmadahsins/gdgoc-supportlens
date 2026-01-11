@@ -28,9 +28,9 @@ Berikut adalah teknologi utama yang digunakan dalam pengembangan sistem ini:
   * **Framework:** NestJS (Node.js)  
   * **Language:** TypeScript  
   * **Database Access:** Firebase Admin SDK (Firestore)  
-  * **AI Integration:** Google Generative AI SDK (Gemini 2.5 Flash)  
-  * **Vector Database:** Pinecone (untuk RAG)  
-  * **Doc Parsing:** pdf-parse  
+  * **AI Integration:** Google Gen AI SDK `@google/genai` (Gemini 2.5 Flash + Gemini Embedding 001)  
+  * **Vector Database:** Pinecone (untuk RAG, dimension: 768)  
+  * **Doc Parsing:** pdf-parse (v1.1.0)  
 * **Infrastructure:**  
   * **Database:** Cloud Firestore (NoSQL)  
   * **Auth Provider:** Firebase Authentication (Google Sign-In)  
@@ -98,41 +98,55 @@ Berikut struktur koleksi data yang harus dikelola Backend:
 
 **Collection: users**
 
-JSON
-
+```json
 {  
-  "uid": "firebase\_uid\_string",  
+  "uid": "firebase_uid_string",  
   "email": "alex@company.com",  
-  "role": "admin", // atau "agent"  
+  "role": "admin", // atau "agent"
+  "createdAt": "ISO8601 string"  
 }
+```
 
 **Collection: tickets**
 
-JSON
-
+```json
 {  
-  "id": "auto\_generated\_id",  
+  "id": "auto_generated_id",  
   "senderName": "Budi Customer",  
   "senderEmail": "budi@gmail.com",  
   "initialMessage": "Aplikasi error saat checkout",  
   "status": "OPEN", // "OPEN" | "CLOSED"  
-  "createdAt": Timestamp,  
+  "createdAt": "Firestore Timestamp",  
   "aiAnalysis": {  
-    "category": "Technical Issue", //   
-    "sentiment": "Negative",       // \[cite: 43\]  
-    "urgencyScore": 8,             // Skala 1-10 \[cite: 43\]  
-    "summary": "User gagal checkout..." //   
+    "category": "Technical Issue", // "Technical Issue" | "Billing Issue" | "Account Issue" | "General Inquiry" | "Feature Request" | "Other"  
+    "sentiment": "Negative", // "Positive" | "Neutral" | "Negative"  
+    "urgencyScore": 8, // Skala 1-10  
+    "summary": "User gagal checkout..." // Bahasa Indonesia  
   },  
-  "messages": \[ // Sub-collection atau Array of Objects  
-    { "sender": "customer", "text": "...", "time": Timestamp },  
-    { "sender": "agent", "text": "...", "time": Timestamp }  
-  \]  
+  "messages": [ // Array of Objects  
+    { "sender": "customer", "message": "...", "time": "ISO8601 string" },  
+    { "sender": "agent", "message": "...", "time": "ISO8601 string", "agentEmail": "...", "agentRole": "..." }  
+  ]  
 }
+```
 
-**Vector DB (Pinecone):**
+**Collection: knowledge_base**
 
+```json
+{
+  "id": "auto_generated_id",
+  "filename": "SOP_Refund_Policy.pdf",
+  "uploadedAt": "ISO8601 string",
+  "chunksCount": 15,
+  "status": "indexed"
+}
+```
+
+* **Index Name:** supportlens-kb (konfigurasi via env: `PINECONE_INDEX_NAME`)
+* **Dimension:** 768 (disesuaikan dengan `outputDimensionality` Gemini Embedding)
 * **Namespace:** sops  
-* **Metadata:** { source: "filename.pdf", text: "original text chunk" }
+* **Metadata:** `{ source: "filename.pdf", text: "original text chunk", chunkIndex: number }`
+* **Vector ID Format:** `{filename_sanitized}_chunk_{index}`
 
 ---
 
@@ -142,60 +156,82 @@ Ini adalah kontrak final. Frontend **hanya** boleh mengakses data lewat endpoint
 
 ### **A. Authentication & User**
 
-* **POST /api/auth/sync**  
+* **POST /auth/sync**  
   * *Fungsi:* Sinkronisasi data user dari Firebase Auth ke Firestore saat login pertama.  
-  * *Body:* { role: "agent" } (Default)  
-  * *Response:* { status: "synced", user: UserObject }
+  * *Body:* `{ role: "agent" }` (Default)  
+  * *Response:* `{ status: "synced", user: UserObject }`
 
 ### **B. Tickets (Operational)**
 
-* **POST /api/tickets (PUBLIC)**  
+* **POST /tickets (PUBLIC)**  
   * *Fungsi:* Menerima pesan dari halaman /demo-chat. Trigger AI Classification otomatis.  
-  * *Body:* { name: string, email: string, message: string }  
-  * *Response:* { ticketId: string, ai\_analysis: Object }  
-* **GET /api/tickets**  
-  * *Fungsi:* Get all tickets untuk Inbox14. Bisa filter via query params.  
-  * *Query:* ?status=OPEN  
-  * *Response:* \[ { ticket\_summary\_object }, ... \]  
-* **GET /api/tickets/:id**  
-  * *Fungsi:* Ambil detail lengkap satu tiket beserta history chat15.  
-  * *Response:* { id: "...", messages: \[\], aiAnalysis: {} }  
-* **POST /api/tickets/:id/reply**  
+  * *Body:* `{ name: string, email: string, message: string }`  
+  * *Response:* `{ ticketId: string, ai_analysis: { category, sentiment, urgencyScore, summary } }`  
+* **GET /tickets**  
+  * *Fungsi:* Get all tickets untuk Inbox. Bisa filter via query params.  
+  * *Query:* `?status=OPEN` atau `?status=CLOSED`  
+  * *Response:* `[ { id, senderName, senderEmail, status, createdAt, aiAnalysis, messages }, ... ]`  
+* **GET /tickets/:id**  
+  * *Fungsi:* Ambil detail lengkap satu tiket beserta history chat.  
+  * *Response:* `{ id, senderName, senderEmail, initialMessage, status, createdAt, aiAnalysis, messages }`  
+* **POST /tickets/:id/reply**  
   * *Fungsi:* Agent mengirim balasan. Update status tiket jadi CLOSED (opsional).  
-  * *Body:* { message: string, closeTicket: boolean }  
-  * *Response:* { success: true }
+  * *Body:* `{ message: string, closeTicket?: boolean }`  
+  * *Response:* `{ success: true }`
 
 ### **C. AI Features (Intelligence)**
 
-* **POST /api/tickets/:id/generate-draft (RAG FEATURE)**  
-  * *Fungsi:* Generate saran balasan berdasarkan pesan customer \+ Dokumen SOP di Pinecone16.  
-  * *Body:* { contextMessage: string }  
+* **POST /tickets/:id/generate-draft (RAG FEATURE)**  
+  * *Fungsi:* Generate saran balasan berdasarkan pesan customer + Dokumen SOP di Pinecone.  
+  * *Body:* `{ contextMessage: string }`  
   * *Response:*  
-  * JSON
 
+```json
 {  
   "draftReply": "Halo, mohon maaf... (Sesuai SOP)",  
-  "sourceDocument": "Refund\_Policy.pdf"  
+  "sourceDocument": "Refund_Policy.pdf",
+  "sourceDocuments": ["Refund_Policy.pdf", "FAQ.pdf"],
+  "ragContextUsed": true
 }
+```
 
-*   
-  *   
-* **POST /api/tickets/:id/summarize**  
-  * *Fungsi:* Jika chat sudah panjang, agent minta ringkasan baru17.  
-  * *Response:* { summary: "Percakapan membahas tentang..." }
+* **POST /tickets/:id/summarize**  
+  * *Fungsi:* Jika chat sudah panjang, agent minta ringkasan baru. Summary disimpan ke `aiAnalysis.summary`.  
+  * *Response:* `{ summary: "Percakapan membahas tentang..." }`
 
 ### **D. Analytics & Knowledge Base (Admin Only)**
 
-* **GET /api/analytics/stats**  
-  * *Guard:* Cek jika role user \!= 'admin', return 403 Forbidden.  
-  * *Response:* { sentimentParams: { positive: 10, negative: 5 }, topCategories: \[\] } 18  
-* **POST /api/knowledge-base/upload**  
+* **GET /analytics/stats**  
+  * *Guard:* Admin Only (menggunakan `RolesGuard` + `@AdminOnly()` decorator). Return 403 Forbidden jika bukan admin.  
+  * *Response:*  
+
+```json
+{  
+  "totalTickets": 100,
+  "openTickets": 45,
+  "closedTickets": 55,
+  "avgUrgencyScore": 6.5,
+  "sentimentStats": { "positive": 20, "negative": 50, "neutral": 30 },
+  "topCategories": [
+    { "category": "Technical Issue", "count": 40 },
+    { "category": "Billing Issue", "count": 25 }
+  ]
+}
+```
+
+* **POST /knowledge-base/upload**  
   * *Guard:* Admin Only.  
-  * *Body:* FormData (File PDF).  
-  * *Process:* Parse PDF \-\> Embedding Gemini \-\> Upsert Pinecone.  
-  * *Response:* { status: "indexed", chunks: 15 }  
-* **GET /api/knowledge-base**  
-  * *Fungsi:* List dokumen yang sudah di-upload.
+  * *Body:* FormData dengan field `file` (PDF, max 10MB).  
+  * *Process:* Parse PDF → Split Chunks → Embedding Gemini → Upsert Pinecone.  
+  * *Response:* `{ status: "indexed", chunks: 15, filename: "SOP.pdf" }`  
+* **GET /knowledge-base**  
+  * *Guard:* Admin Only.  
+  * *Fungsi:* List dokumen yang sudah di-upload.  
+  * *Response:* `[ { id, filename, uploadedAt, chunksCount, status }, ... ]`
+* **DELETE /knowledge-base/:id**  
+  * *Guard:* Admin Only.  
+  * *Fungsi:* Hapus dokumen dari Firestore dan vectors dari Pinecone.  
+  * *Response:* `{ success: true }`
 
 ---
 
