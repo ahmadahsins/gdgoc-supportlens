@@ -1,8 +1,14 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #000000;
+  --foreground: #9FCC2E;
+  --primary-darkest: #000000;
+  --primary-dark: #0E402D;
+  --primary: #295135;
+  --primary-light: #5A6650;
+  --accent: #9FCC2E;
+  --accent-glow: rgba(159, 204, 46, 0.4);
 }
 
 @theme inline {
@@ -12,15 +18,276 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0E402D;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #295135;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #9FCC2E;
+}
+
+/* Glow Effects */
+.glow-text {
+  text-shadow: 0 0 20px rgba(159, 204, 46, 0.5), 0 0 40px rgba(159, 204, 46, 0.3);
+}
+
+.glow-box {
+  box-shadow: 0 0 30px rgba(159, 204, 46, 0.2), inset 0 0 30px rgba(159, 204, 46, 0.05);
+}
+
+.glow-border {
+  box-shadow: 0 0 15px rgba(159, 204, 46, 0.3), 0 0 30px rgba(159, 204, 46, 0.1);
+}
+
+/* Animated Gradient Background */
+@keyframes gradientShift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Glitch Animation for Background Codes */
+@keyframes glitch {
+  0%, 90%, 100% {
+    opacity: 0.07;
+    transform: translate(0) skewX(0);
+  }
+  92% {
+    opacity: 0.12;
+    transform: translate(-2px, 1px) skewX(-1deg);
+  }
+  94% {
+    opacity: 0.05;
+    transform: translate(2px, -1px) skewX(1deg);
+  }
+  96% {
+    opacity: 0.15;
+    transform: translate(-1px, 2px) skewX(0);
+  }
+  98% {
+    opacity: 0.08;
+    transform: translate(1px, -2px) skewX(-0.5deg);
+  }
+}
+
+.gradient-animated {
+  background: linear-gradient(-45deg, #000000, #0E402D, #295135, #0E402D);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+}
+
+/* Grid Pattern */
+.grid-pattern {
+  background-image: 
+    linear-gradient(rgba(159, 204, 46, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(159, 204, 46, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+/* Floating Animation */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(2deg);
+  }
+}
+
+.float-animation {
+  animation: float 6s ease-in-out infinite;
+}
+
+.float-animation-delayed {
+  animation: float 6s ease-in-out 2s infinite;
+}
+
+.float-animation-slow {
+  animation: float 8s ease-in-out 1s infinite;
+}
+
+/* Pulse Animation */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(159, 204, 46, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(159, 204, 46, 0.6), 0 0 60px rgba(159, 204, 46, 0.3);
+  }
+}
+
+.pulse-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+/* Scan Line Effect */
+@keyframes scanline {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+.scanline::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(159, 204, 46, 0.5), transparent);
+  animation: scanline 3s linear infinite;
+}
+
+/* Data Stream Animation */
+@keyframes dataStream {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+/* Wireframe Glow */
+.wireframe-glow {
+  filter: drop-shadow(0 0 10px rgba(159, 204, 46, 0.5));
+}
+
+/* Button Hover Effects */
+.btn-futuristic {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.btn-futuristic::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(159, 204, 46, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn-futuristic:hover::before {
+  left: 100%;
+}
+
+/* Card Hover Effect */
+.card-hover {
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.card-hover:hover {
+  transform: translateY(-10px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(159, 204, 46, 0.2);
+}
+
+/* Text Reveal Animation */
+@keyframes textReveal {
+  0% {
+    clip-path: inset(0 100% 0 0);
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.text-reveal {
+  animation: textReveal 1s ease forwards;
+}
+
+/* Particle effect */
+@keyframes particle {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100px) scale(0);
+    opacity: 0;
+  }
+}
+
+/* Matrix rain effect */
+@keyframes matrixRain {
+  0% {
+    transform: translateY(-100%);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(1000%);
+    opacity: 0;
+  }
+}
+
+/* Typewriter effect */
+@keyframes typewriter {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes blink {
+  50% {
+    border-color: transparent;
+  }
+}
+
+.typewriter {
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 2px solid #9FCC2E;
+  animation: typewriter 3s steps(40) 1s forwards, blink 0.7s step-end infinite;
+}
+
+/* Hexagon pattern */
+.hex-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23295135' fill-opacity='0.1'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Noise texture overlay */
+.noise-overlay::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.03;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 }
