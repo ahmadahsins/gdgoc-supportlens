@@ -4,7 +4,17 @@ SupportLens adalah platform helpdesk cerdas yang memberdayakan tim Customer Supp
 
 ---
 
-## 🏗️ Project Architecture & Tech Stack
+## � Live Demo
+
+| Service | URL |
+|---------|-----|
+| **Backend API** | [https://api.supportlens.cloud](https://api.supportlens.cloud) |
+| **API Documentation** | [https://api.supportlens.cloud/api-docs](https://api.supportlens.cloud/api-docs) |
+| **Frontend** | *Coming Soon* |
+
+---
+
+## �🏗️ Project Architecture & Tech Stack
 
 Proyek ini menggunakan struktur **Monorepo** untuk memisahkan logika Frontend dan Backend namun tetap dalam satu kontrol versi.
 
@@ -21,9 +31,10 @@ Proyek ini menggunakan struktur **Monorepo** untuk memisahkan logika Frontend da
 * **Framework:** NestJS (Node.js)
 * **Language:** TypeScript
 * **Database:** Cloud Firestore (via Firebase Admin SDK)
-* **AI Integration:** Google Generative AI SDK (Gemini 1.5 Flash)
+* **AI Integration:** Google Gen AI SDK `@google/genai` (Gemini 2.5 Flash + Gemini Embedding 001)
 * **Vector DB:** Pinecone (untuk sistem RAG)
 * **PDF Parsing:** `pdf-parse`
+* **API Documentation:** Swagger (OpenAPI)
 
 ---
 
@@ -102,7 +113,8 @@ git push origin feat/nama-fitur
 
 ### Prerequisites
 
-* Node.js (v18+)
+* Node.js (v22+)
+* pnpm (recommended) or npm
 * Firebase Project (Firestore & Auth enabled)
 * Pinecone API Key & Index
 * Google AI Studio (Gemini) API Key
@@ -111,8 +123,8 @@ git push origin feat/nama-fitur
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/username/support-lens.git
-cd support-lens
+git clone https://github.com/ahmadahsins/gdgoc-supportlens.git
+cd gdgoc-supportlens
 
 ```
 
@@ -120,9 +132,11 @@ cd support-lens
 2. **Setup Server (Backend)**
 ```bash
 cd server
-npm install
-# Buat file .env dan masukkan API Keys (Gemini, Pinecone, Firebase Admin)
-npm run start:dev
+pnpm install
+# Copy dan edit file .env
+cp .env.example .env
+# Masukkan API Keys (Gemini, Pinecone, Firebase Admin)
+pnpm run start:dev
 
 ```
 
@@ -130,9 +144,9 @@ npm run start:dev
 3. **Setup Client (Frontend)**
 ```bash
 cd client
-npm install
+pnpm install
 # Buat file .env.local dan masukkan Firebase Config
-npm run dev
+pnpm run dev
 
 ```
 
@@ -140,7 +154,32 @@ npm run dev
 
 ---
 
-## 🗺️ Development Roadmap
+## � API Documentation
+
+API Documentation tersedia via Swagger UI:
+
+- **Local:** [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
+- **Production:** [https://api.supportlens.cloud/api-docs](https://api.supportlens.cloud/api-docs)
+
+### Main Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/` | Health check |
+| `POST` | `/tickets` | Create new ticket (Public) |
+| `GET` | `/tickets` | Get all tickets |
+| `GET` | `/tickets/:id` | Get ticket detail |
+| `POST` | `/tickets/:id/reply` | Reply to ticket |
+| `POST` | `/tickets/:id/summarize` | AI summarize conversation |
+| `POST` | `/tickets/:id/generate-draft` | RAG-powered draft reply |
+| `GET` | `/analytics/stats` | Dashboard statistics (Admin) |
+| `POST` | `/knowledge-base/upload` | Upload SOP document (Admin) |
+| `GET` | `/knowledge-base` | List documents (Admin) |
+| `DELETE` | `/knowledge-base/:id` | Delete document (Admin) |
+
+---
+
+## �🗺️ Development Roadmap
 
 * **Minggu 1:** Foundation (Auth Sync, Firestore CRUD, Base UI).
 * **Minggu 2:** AI Intelligence (Auto-classification, Sentiment, Inbox UI).
@@ -151,8 +190,15 @@ npm run dev
 
 ## ☁️ Deployment
 
-* **Frontend:** Deployed on **Vercel**.
-* **Backend:** Deployed on **VPS (Rumahweb)** menggunakan **Coolify**.
+| Service | Platform | URL |
+|---------|----------|-----|
+| **Backend API** | VPS (Rumahweb) via Docker | [https://api.supportlens.cloud](https://api.supportlens.cloud) |
+| **Frontend** | Vercel | *Coming Soon* |
+
+### Deployment Stack (Backend)
+- Docker + Docker Compose
+- Nginx (Reverse Proxy + SSL)
+- GitHub Actions (CI/CD)
 
 ---
 
