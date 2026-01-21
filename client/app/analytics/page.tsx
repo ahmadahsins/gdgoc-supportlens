@@ -99,7 +99,7 @@ export default function AnalyticsPage() {
   if (role !== 'admin') {
     return (
       <DashboardLayout>
-        <div className="rounded-xl border p-16 text-center bg-gradient-to-br from-[#0E402D]/30 to-[#000000] border-[#295135]/50">
+        <div className="rounded-xl border p-16 text-center bg-linear-to-br from-[#0E402D]/30 to-[#000000] border-[#295135]/50">
           <div className="flex flex-col items-center space-y-4">
             <div className="w-16 h-16 rounded-full flex items-center justify-center bg-red-500/20">
               <Shield className="w-8 h-8 text-red-400" />
@@ -119,7 +119,7 @@ export default function AnalyticsPage() {
   if (error) {
     return (
       <DashboardLayout>
-        <div className="rounded-xl border p-12 text-center bg-gradient-to-br from-[#0E402D]/30 to-[#000000] border-[#295135]/50">
+        <div className="rounded-xl border p-12 text-center bg-linear-to-br from-[#0E402D]/30 to-[#000000] border-[#295135]/50">
           <p className="text-[#5A6650]">{error}</p>
           <button 
             onClick={loadAnalytics}
@@ -135,7 +135,7 @@ export default function AnalyticsPage() {
   if (!analytics) {
     return (
       <DashboardLayout>
-        <div className="rounded-xl border p-12 text-center bg-gradient-to-br from-[#0E402D]/30 to-[#000000] border-[#295135]/50">
+        <div className="rounded-xl border p-12 text-center bg-linear-to-br from-[#0E402D]/30 to-[#000000] border-[#295135]/50">
           <p className="text-[#5A6650]">No analytics data available</p>
         </div>
       </DashboardLayout>
@@ -159,7 +159,7 @@ export default function AnalyticsPage() {
     ? ((analytics.closedTickets / analytics.totalTickets) * 100).toFixed(1)
     : 0;
 
-  const cardStyle = 'bg-gradient-to-br from-[#0E402D]/50 to-[#000000] border-[#295135]/50';
+  const cardStyle = 'bg-linear-to-br from-[#0E402D]/50 to-[#000000] border-[#295135]/50';
 
   const chartTextColor = '#9FCC2E';
   const chartGridColor = '#295135';

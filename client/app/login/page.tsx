@@ -181,7 +181,7 @@ export default function LoginPage() {
 
       {/* Login Card */}
       <div className="relative z-10 w-full max-w-md">
-        <div className="bg-gradient-to-br from-[#0E402D]/80 to-[#000000]/90 backdrop-blur-xl border border-[#295135]/50 rounded-2xl p-8 shadow-[0_0_50px_rgba(159,204,46,0.1)]">
+        <div className="bg-linear-to-br from-[#0E402D]/80 to-[#000000]/90 backdrop-blur-xl border border-[#295135]/50 rounded-2xl p-8 shadow-[0_0_50px_rgba(159,204,46,0.1)]">
           {/* Header */}
           <div className="text-center mb-8">
             <div className="flex justify-center mb-6">
@@ -192,7 +192,7 @@ export default function LoginPage() {
             }}>
               SUPPORTLENS
             </h1>
-            <div className="w-16 h-[2px] bg-gradient-to-r from-transparent via-[#9FCC2E] to-transparent mx-auto mb-4" />
+            <div className="w-16 h-0.5 bg-linear-to-r from-transparent via-[#9FCC2E] to-transparent mx-auto mb-4" />
             <p className="text-[#5A6650] text-sm tracking-wide">
               AI-Powered Intelligence Platform
             </p>
@@ -218,7 +218,7 @@ export default function LoginPage() {
             onClick={handleGoogleSignIn}
             className="w-full h-14 text-base bg-[#295135] hover:bg-[#0E402D] text-[#9FCC2E] border border-[#9FCC2E]/30 hover:border-[#9FCC2E] transition-all duration-300 group relative overflow-hidden"
           >
-            <span className="absolute inset-0 bg-gradient-to-r from-transparent via-[#9FCC2E]/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+            <span className="absolute inset-0 bg-linear-to-r from-transparent via-[#9FCC2E]/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
             <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
               <path
                 fill="#9FCC2E"

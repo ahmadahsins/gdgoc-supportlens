@@ -100,7 +100,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 backdrop-blur-xl border-r transform transition-all duration-300 ease-in-out lg:translate-x-0 bg-gradient-to-b from-[#0E402D]/90 to-[#000000] border-[#295135]/50 ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 backdrop-blur-xl border-r transform transition-all duration-300 ease-in-out lg:translate-x-0 bg-linear-to-b from-[#0E402D]/90 to-[#000000] border-[#295135]/50 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >

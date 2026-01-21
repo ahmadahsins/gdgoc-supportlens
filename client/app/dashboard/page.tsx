@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { api } from '@/lib/api';
-import { Clock, Filter, Search, Inbox, CheckCircle, AlertCircle, TrendingUp } from 'lucide-react';
+import { Clock, Filter, Search, Inbox, CheckCircle, AlertCircle, TrendingUp, Tag } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -33,6 +33,7 @@ export default function DashboardPage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'OPEN' | 'CLOSED'>('all');
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
@@ -63,11 +64,23 @@ export default function DashboardPage() {
     }
   };
 
-  const filteredTickets = tickets.filter(ticket =>
-    ticket.initialMessage?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    ticket.senderName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    ticket.senderEmail?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredTickets = tickets.filter(ticket => {
+    const matchesSearch = ticket.initialMessage?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      ticket.senderName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      ticket.senderEmail?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesCategory = categoryFilter === 'all' || 
+      ticket.aiAnalysis?.category?.toLowerCase() === categoryFilter.toLowerCase();
+    
+    return matchesSearch && matchesCategory;
+  });
+
+  // Get unique categories from tickets
+  const categories = Array.from(new Set(
+    tickets
+      .map(t => t.aiAnalysis?.category)
+      .filter((c): c is string => !!c)
+  ));
 
   const getPriorityColor = (urgencyScore?: number) => {
     if (!urgencyScore) return 'bg-[#5A6650]/20 text-[#5A6650] border-[#5A6650]/30';
@@ -192,52 +205,89 @@ export default function DashboardPage() {
 
         {/* Filters and Search */}
         <div className="rounded-xl p-6 border bg-linear-to-br from-[#0E402D]/30 to-[#000000] border-[#295135]/50">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#5A6650]" />
-              <Input
-                placeholder="Search tickets by subject, customer name, or email..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-12 h-12 bg-[#000000]/50 border-[#295135]/50 text-[#9FCC2E] placeholder:text-[#5A6650] focus:border-[#9FCC2E]/50 focus:ring-[#9FCC2E]/20"
-              />
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#5A6650]" />
+                <Input
+                  placeholder="Search tickets by subject, customer name, or email..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-12 h-12 bg-[#000000]/50 border-[#295135]/50 text-[#9FCC2E] placeholder:text-[#5A6650] focus:border-[#9FCC2E]/50 focus:ring-[#9FCC2E]/20"
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => setFilter('all')}
+                  size="sm"
+                  className={`h-12 px-6 font-mono tracking-wider transition-all duration-300 ${
+                    filter === 'all' 
+                      ? 'bg-[#9FCC2E]/20 text-[#9FCC2E] border border-[#9FCC2E]/50 hover:bg-[#9FCC2E]/30'
+                      : 'bg-transparent text-[#5A6650] border border-[#295135]/50 hover:text-[#9FCC2E] hover:border-[#9FCC2E]/30'
+                  }`}
+                >
+                  <Filter className="w-4 h-4 mr-2" />
+                  ALL
+                </Button>
+                <Button
+                  onClick={() => setFilter('OPEN')}
+                  size="sm"
+                  className={`h-12 px-6 font-mono tracking-wider transition-all duration-300 ${
+                    filter === 'OPEN' 
+                      ? 'bg-amber-500/20 text-amber-400 border border-amber-500/50 hover:bg-amber-500/30' 
+                      : 'bg-transparent text-[#5A6650] border border-[#295135]/50 hover:text-amber-400 hover:border-amber-500/30'
+                  }`}
+                >
+                  OPEN
+                </Button>
+                <Button
+                  onClick={() => setFilter('CLOSED')}
+                  size="sm"
+                  className={`h-12 px-6 font-mono tracking-wider transition-all duration-300 ${
+                    filter === 'CLOSED' 
+                      ? 'bg-[#9FCC2E]/20 text-[#9FCC2E] border border-[#9FCC2E]/50 hover:bg-[#9FCC2E]/30'
+                      : 'bg-transparent text-[#5A6650] border border-[#295135]/50 hover:text-[#9FCC2E] hover:border-[#9FCC2E]/30'
+                  }`}
+                >
+                  CLOSED
+                </Button>
+              </div>
             </div>
-            <div className="flex gap-2">
-              <Button
-                onClick={() => setFilter('all')}
-                size="sm"
-                className={`h-12 px-6 font-mono tracking-wider transition-all duration-300 ${
-                  filter === 'all' 
-                    ? 'bg-[#9FCC2E]/20 text-[#9FCC2E] border border-[#9FCC2E]/50 hover:bg-[#9FCC2E]/30'
-                    : 'bg-transparent text-[#5A6650] border border-[#295135]/50 hover:text-[#9FCC2E] hover:border-[#9FCC2E]/30'
-                }`}
-              >
-                <Filter className="w-4 h-4 mr-2" />
-                ALL
-              </Button>
-              <Button
-                onClick={() => setFilter('OPEN')}
-                size="sm"
-                className={`h-12 px-6 font-mono tracking-wider transition-all duration-300 ${
-                  filter === 'OPEN' 
-                    ? 'bg-amber-500/20 text-amber-400 border border-amber-500/50 hover:bg-amber-500/30' 
-                    : 'bg-transparent text-[#5A6650] border border-[#295135]/50 hover:text-amber-400 hover:border-amber-500/30'
-                }`}
-              >
-                OPEN
-              </Button>
-              <Button
-                onClick={() => setFilter('CLOSED')}
-                size="sm"
-                className={`h-12 px-6 font-mono tracking-wider transition-all duration-300 ${
-                  filter === 'CLOSED' 
-                    ? 'bg-[#9FCC2E]/20 text-[#9FCC2E] border border-[#9FCC2E]/50 hover:bg-[#9FCC2E]/30'
-                    : 'bg-transparent text-[#5A6650] border border-[#295135]/50 hover:text-[#9FCC2E] hover:border-[#9FCC2E]/30'
-                }`}
-              >
-                CLOSED
-              </Button>
-            </div>
+            
+            {/* Category Filter */}
+            {categories.length > 0 && (
+              <div className="flex items-center gap-3 flex-wrap">
+                <span className="text-xs font-mono text-[#5A6650]">
+                  <Tag className="w-3 h-3 inline mr-1" />
+                  CATEGORY:
+                </span>
+                <Button
+                  onClick={() => setCategoryFilter('all')}
+                  size="sm"
+                  className={`h-8 px-4 text-xs font-mono tracking-wider transition-all duration-300 ${
+                    categoryFilter === 'all' 
+                      ? 'bg-[#9FCC2E]/20 text-[#9FCC2E] border border-[#9FCC2E]/50 hover:bg-[#9FCC2E]/30'
+                      : 'bg-transparent text-[#5A6650] border border-[#295135]/50 hover:text-[#9FCC2E] hover:border-[#9FCC2E]/30'
+                  }`}
+                >
+                  ALL
+                </Button>
+                {categories.map((category) => (
+                  <Button
+                    key={category}
+                    onClick={() => setCategoryFilter(category)}
+                    size="sm"
+                    className={`h-8 px-4 text-xs font-mono tracking-wider transition-all duration-300 ${
+                      categoryFilter === category 
+                        ? 'bg-blue-500/20 text-blue-400 border border-blue-500/50 hover:bg-blue-500/30'
+                        : 'bg-transparent text-[#5A6650] border border-[#295135]/50 hover:text-blue-400 hover:border-blue-500/30'
+                    }`}
+                  >
+                    {category.toUpperCase()}
+                  </Button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -280,7 +330,7 @@ export default function DashboardPage() {
                       <div className="flex items-center gap-3 mb-3 flex-wrap">
                         <span className="text-xs font-mono text-[#5A6650]">#{String(index + 1).padStart(3, '0')}</span>
                         <h3 className="text-lg font-semibold truncate text-[#9FCC2E]">
-                          {ticket.aiAnalysis?.summary || ticket.initialMessage?.substring(0, 50) + '...'}
+                          {ticket.initialMessage?.substring(0, 60)}{ticket.initialMessage?.length > 60 ? '...' : ''}
                         </h3>
                         <span className={`px-3 py-1 rounded-full text-xs font-mono border ${
                           ticket.status === 'OPEN' 
@@ -289,6 +339,11 @@ export default function DashboardPage() {
                         }`}>
                           {ticket.status}
                         </span>
+                        {ticket.aiAnalysis?.category && (
+                          <span className="px-3 py-1 rounded-full text-xs font-mono border bg-blue-500/20 text-blue-400 border-blue-500/30">
+                            {ticket.aiAnalysis.category.toUpperCase()}
+                          </span>
+                        )}
                         <span className={`px-3 py-1 rounded-full text-xs font-mono border ${getPriorityColor(ticket.aiAnalysis?.urgencyScore)}`}>
                           {getPriorityLabel(ticket.aiAnalysis?.urgencyScore)}
                         </span>

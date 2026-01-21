@@ -16,7 +16,6 @@ export default function FloatingChat({ className }: FloatingChatProps) {
   const [isMinimized, setIsMinimized] = useState(false);
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
-  const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -25,8 +24,13 @@ export default function FloatingChat({ className }: FloatingChatProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!customerName || !customerEmail || !subject || !message) {
+    if (!customerName || !customerEmail || !message) {
       alert('Please fill in all fields');
+      return;
+    }
+
+    if (message.length < 10) {
+      alert('Message must be at least 10 characters');
       return;
     }
 
@@ -35,10 +39,10 @@ export default function FloatingChat({ className }: FloatingChatProps) {
       const response = await api.createTicket({
         name: customerName,
         email: customerEmail,
-        message: `${subject}\n\n${message}`,
+        message: message,
       });
       
-      setTicketId(response.data.id);
+      setTicketId(response.data.ticketId);
       setSubmitted(true);
     } catch (error) {
       console.error('Error creating ticket:', error);
@@ -51,7 +55,6 @@ export default function FloatingChat({ className }: FloatingChatProps) {
   const handleReset = () => {
     setCustomerName('');
     setCustomerEmail('');
-    setSubject('');
     setMessage('');
     setSubmitted(false);
     setTicketId('');
@@ -66,7 +69,7 @@ export default function FloatingChat({ className }: FloatingChatProps) {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className={`fixed bottom-6 right-6 z-50 w-14 h-14 bg-gradient-to-br from-[#295135] to-[#0E402D] rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center border border-[#9FCC2E]/50 group hover:scale-110 ${className}`}
+        className={`fixed bottom-6 right-6 z-50 w-14 h-14 bg-linear-to-br from-[#295135] to-[#0E402D] rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center border border-[#9FCC2E]/50 group hover:scale-110 ${className}`}
         aria-label="Open chat"
       >
         <MessageSquare className="w-6 h-6 text-[#9FCC2E] group-hover:scale-110 transition-transform" />
@@ -79,7 +82,7 @@ export default function FloatingChat({ className }: FloatingChatProps) {
     <div 
       className={`fixed bottom-6 right-6 z-50 ${isMinimized ? 'w-72' : 'w-96'} transition-all duration-300 ${className}`}
     >
-      <div className="bg-gradient-to-br from-[#0E402D]/95 to-[#000000]/95 backdrop-blur-xl rounded-2xl border border-[#295135]/50 shadow-2xl overflow-hidden">
+      <div className="bg-linear-to-br from-[#0E402D]/95 to-[#000000]/95 backdrop-blur-xl rounded-2xl border border-[#295135]/50 shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-[#295135]/50 bg-[#0E402D]/50">
           <div className="flex items-center gap-3">
@@ -113,7 +116,7 @@ export default function FloatingChat({ className }: FloatingChatProps) {
 
         {/* Content */}
         {!isMinimized && (
-          <div className="p-4 max-h-[500px] overflow-y-auto">
+          <div className="p-4 max-h-125 overflow-y-auto">
             {!submitted ? (
               <form onSubmit={handleSubmit} className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
@@ -146,27 +149,15 @@ export default function FloatingChat({ className }: FloatingChatProps) {
 
                 <div>
                   <label className="block text-[#5A6650] text-xs font-mono tracking-wider mb-1.5">
-                    SUBJECT *
-                  </label>
-                  <Input
-                    placeholder="Brief description"
-                    value={subject}
-                    onChange={(e) => setSubject(e.target.value)}
-                    required
-                    className="bg-[#000000]/50 border-[#295135]/50 text-[#9FCC2E] placeholder:text-[#5A6650]/50 focus:border-[#9FCC2E]/50 focus:ring-[#9FCC2E]/20 h-9 text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[#5A6650] text-xs font-mono tracking-wider mb-1.5">
                     MESSAGE *
                   </label>
                   <Textarea
-                    placeholder="Describe your issue..."
+                    placeholder="Describe your issue in detail (min 10 characters)..."
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     required
-                    className="bg-[#000000]/50 border-[#295135]/50 text-[#9FCC2E] placeholder:text-[#5A6650]/50 focus:border-[#9FCC2E]/50 focus:ring-[#9FCC2E]/20 resize-none min-h-[100px] text-sm"
+                    minLength={10}
+                    className="bg-[#000000]/50 border-[#295135]/50 text-[#9FCC2E] placeholder:text-[#5A6650]/50 focus:border-[#9FCC2E]/50 focus:ring-[#9FCC2E]/20 resize-none min-h-30 text-sm"
                   />
                 </div>
 
