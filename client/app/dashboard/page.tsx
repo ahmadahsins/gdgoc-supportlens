@@ -117,10 +117,10 @@ export default function DashboardPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-[#9FCC2E] tracking-wide" style={{ textShadow: '0 0 20px rgba(159, 204, 46, 0.3)' }}>
+            <h1 className="text-3xl font-bold tracking-wide text-[#9FCC2E]" style={{ textShadow: '0 0 20px rgba(159, 204, 46, 0.3)' }}>
               UNIFIED INBOX
             </h1>
-            <p className="text-[#5A6650] mt-1 font-mono text-sm tracking-wider">MANAGE ALL CUSTOMER SUPPORT TICKETS</p>
+            <p className="mt-1 font-mono text-sm tracking-wider text-[#5A6650]">MANAGE ALL CUSTOMER SUPPORT TICKETS</p>
           </div>
           <div className="text-xs font-mono text-[#5A6650]">
             <span className="text-[#9FCC2E]">{new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }).toUpperCase()}</span>
@@ -130,76 +130,76 @@ export default function DashboardPage() {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Total Tickets */}
-          <div className="group relative bg-linear-to-br from-[#0E402D]/50 to-[#000000] border border-[#295135]/50 rounded-xl p-6 transition-all duration-300 hover:border-[#9FCC2E]/50 hover:shadow-[0_0_30px_rgba(159,204,46,0.1)]">
+          <div className="group relative rounded-xl p-6 transition-all duration-300 border bg-linear-to-br from-[#0E402D]/50 to-[#000000] border-[#295135]/50 hover:border-[#9FCC2E]/50 hover:shadow-[0_0_30px_rgba(159,204,46,0.1)]">
             <div className="absolute inset-0 bg-linear-to-br from-[#9FCC2E]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-xl" />
             <div className="relative z-10 flex items-start justify-between">
               <div>
-                <p className="text-[#5A6650] text-xs font-mono tracking-wider mb-2">TOTAL.TICKETS</p>
+                <p className="text-xs font-mono tracking-wider mb-2 text-[#5A6650]">TOTAL.TICKETS</p>
                 <p className="text-4xl font-bold text-[#9FCC2E]" style={{ textShadow: '0 0 15px rgba(159, 204, 46, 0.3)' }}>
                   {tickets.length}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-[#295135]/50 rounded-lg flex items-center justify-center border border-[#9FCC2E]/20">
+              <div className="w-12 h-12 rounded-lg flex items-center justify-center border bg-[#295135]/50 border-[#9FCC2E]/20">
                 <Inbox className="w-6 h-6 text-[#9FCC2E]" />
               </div>
             </div>
-            <div className="mt-4 flex items-center text-xs text-[#5A6650] font-mono">
+            <div className="mt-4 flex items-center text-xs font-mono text-[#5A6650]">
               <TrendingUp className="w-3 h-3 mr-1 text-[#9FCC2E]" />
               <span>ALL.TIME</span>
             </div>
           </div>
 
           {/* Open Tickets */}
-          <div className="group relative bg-linear-to-br from-[#0E402D]/50 to-[#000000] border border-[#295135]/50 rounded-xl p-6 transition-all duration-300 hover:border-[#9FCC2E]/50 hover:shadow-[0_0_30px_rgba(159,204,46,0.1)]">
+          <div className="group relative rounded-xl p-6 transition-all duration-300 border bg-linear-to-br from-[#0E402D]/50 to-[#000000] border-[#295135]/50 hover:border-[#9FCC2E]/50 hover:shadow-[0_0_30px_rgba(159,204,46,0.1)]">
             <div className="absolute inset-0 bg-linear-to-br from-[#9FCC2E]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-xl" />
             <div className="relative z-10 flex items-start justify-between">
               <div>
-                <p className="text-[#5A6650] text-xs font-mono tracking-wider mb-2">OPEN.TICKETS</p>
+                <p className="text-xs font-mono tracking-wider mb-2 text-[#5A6650]">OPEN.TICKETS</p>
                 <p className="text-4xl font-bold text-amber-400" style={{ textShadow: '0 0 15px rgba(251, 191, 36, 0.3)' }}>
                   {openTicketCount}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-amber-500/20 rounded-lg flex items-center justify-center border border-amber-500/30">
+              <div className="w-12 h-12 rounded-lg flex items-center justify-center border bg-amber-500/20 border-amber-500/30">
                 <AlertCircle className="w-6 h-6 text-amber-400" />
               </div>
             </div>
-            <div className="mt-4 flex items-center text-xs text-[#5A6650] font-mono">
+            <div className="mt-4 flex items-center text-xs font-mono text-[#5A6650]">
               <div className="w-2 h-2 bg-amber-400 rounded-full mr-2 animate-pulse" />
               <span>REQUIRES.ACTION</span>
             </div>
           </div>
 
           {/* Closed Tickets */}
-          <div className="group relative bg-linear-to-br from-[#0E402D]/50 to-[#000000] border border-[#295135]/50 rounded-xl p-6 transition-all duration-300 hover:border-[#9FCC2E]/50 hover:shadow-[0_0_30px_rgba(159,204,46,0.1)]">
+          <div className="group relative rounded-xl p-6 transition-all duration-300 border bg-linear-to-br from-[#0E402D]/50 to-[#000000] border-[#295135]/50 hover:border-[#9FCC2E]/50 hover:shadow-[0_0_30px_rgba(159,204,46,0.1)]">
             <div className="absolute inset-0 bg-linear-to-br from-[#9FCC2E]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-xl" />
             <div className="relative z-10 flex items-start justify-between">
               <div>
-                <p className="text-[#5A6650] text-xs font-mono tracking-wider mb-2">CLOSED.TICKETS</p>
+                <p className="text-xs font-mono tracking-wider mb-2 text-[#5A6650]">CLOSED.TICKETS</p>
                 <p className="text-4xl font-bold text-[#9FCC2E]" style={{ textShadow: '0 0 15px rgba(159, 204, 46, 0.3)' }}>
                   {closedTicketCount}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-[#9FCC2E]/20 rounded-lg flex items-center justify-center border border-[#9FCC2E]/30">
+              <div className="w-12 h-12 rounded-lg flex items-center justify-center border bg-[#9FCC2E]/20 border-[#9FCC2E]/30">
                 <CheckCircle className="w-6 h-6 text-[#9FCC2E]" />
               </div>
             </div>
-            <div className="mt-4 flex items-center text-xs text-[#5A6650] font-mono">
-              <div className="w-2 h-2 bg-[#9FCC2E] rounded-full mr-2" />
+            <div className="mt-4 flex items-center text-xs font-mono text-[#5A6650]">
+              <div className="w-2 h-2 rounded-full mr-2 bg-[#9FCC2E]" />
               <span>RESOLVED</span>
             </div>
           </div>
         </div>
 
         {/* Filters and Search */}
-        <div className="bg-linear-to-br from-[#0E402D]/30 to-[#000000] border border-[#295135]/50 rounded-xl p-6">
+        <div className="rounded-xl p-6 border bg-linear-to-br from-[#0E402D]/30 to-[#000000] border-[#295135]/50">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#5A6650] w-5 h-5" />
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#5A6650]" />
               <Input
                 placeholder="Search tickets by subject, customer name, or email..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-12 bg-[#000000]/50 border-[#295135]/50 text-[#9FCC2E] placeholder:text-[#5A6650] focus:border-[#9FCC2E]/50 focus:ring-[#9FCC2E]/20 h-12"
+                className="pl-12 h-12 bg-[#000000]/50 border-[#295135]/50 text-[#9FCC2E] placeholder:text-[#5A6650] focus:border-[#9FCC2E]/50 focus:ring-[#9FCC2E]/20"
               />
             </div>
             <div className="flex gap-2">
@@ -208,7 +208,7 @@ export default function DashboardPage() {
                 size="sm"
                 className={`h-12 px-6 font-mono tracking-wider transition-all duration-300 ${
                   filter === 'all' 
-                    ? 'bg-[#9FCC2E]/20 text-[#9FCC2E] border border-[#9FCC2E]/50 hover:bg-[#9FCC2E]/30' 
+                    ? 'bg-[#9FCC2E]/20 text-[#9FCC2E] border border-[#9FCC2E]/50 hover:bg-[#9FCC2E]/30'
                     : 'bg-transparent text-[#5A6650] border border-[#295135]/50 hover:text-[#9FCC2E] hover:border-[#9FCC2E]/30'
                 }`}
               >
@@ -231,7 +231,7 @@ export default function DashboardPage() {
                 size="sm"
                 className={`h-12 px-6 font-mono tracking-wider transition-all duration-300 ${
                   filter === 'CLOSED' 
-                    ? 'bg-[#9FCC2E]/20 text-[#9FCC2E] border border-[#9FCC2E]/50 hover:bg-[#9FCC2E]/30' 
+                    ? 'bg-[#9FCC2E]/20 text-[#9FCC2E] border border-[#9FCC2E]/50 hover:bg-[#9FCC2E]/30'
                     : 'bg-transparent text-[#5A6650] border border-[#295135]/50 hover:text-[#9FCC2E] hover:border-[#9FCC2E]/30'
                 }`}
               >
@@ -244,25 +244,25 @@ export default function DashboardPage() {
         {/* Tickets List */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <p className="text-[#5A6650] text-xs font-mono tracking-wider">
+            <p className="text-xs font-mono tracking-wider text-[#5A6650]">
               DISPLAYING <span className="text-[#9FCC2E]">{filteredTickets.length}</span> RECORDS
             </p>
           </div>
 
           {loading ? (
-            <div className="bg-linear-to-br from-[#0E402D]/30 to-[#000000] border border-[#295135]/50 rounded-xl p-12 text-center">
+            <div className="rounded-xl p-12 text-center border bg-linear-to-br from-[#0E402D]/30 to-[#000000] border-[#295135]/50">
               <div className="relative inline-block">
-                <div className="w-12 h-12 border-2 border-[#9FCC2E]/30 rounded-full animate-spin border-t-[#9FCC2E]"></div>
+                <div className="w-12 h-12 border-2 rounded-full animate-spin border-[#9FCC2E]/30 border-t-[#9FCC2E]"></div>
               </div>
-              <p className="mt-4 text-[#5A6650] font-mono text-sm">LOADING TICKETS...</p>
+              <p className="mt-4 font-mono text-sm text-[#5A6650]">LOADING TICKETS...</p>
             </div>
           ) : filteredTickets.length === 0 ? (
-            <div className="bg-linear-to-br from-[#0E402D]/30 to-[#000000] border border-[#295135]/50 rounded-xl p-12 text-center">
-              <div className="w-16 h-16 mx-auto mb-4 bg-[#295135]/30 rounded-full flex items-center justify-center">
+            <div className="rounded-xl p-12 text-center border bg-linear-to-br from-[#0E402D]/30 to-[#000000] border-[#295135]/50">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-[#295135]/30">
                 <Inbox className="w-8 h-8 text-[#5A6650]" />
               </div>
-              <p className="text-[#9FCC2E] font-semibold mb-2">NO TICKETS FOUND</p>
-              <p className="text-[#5A6650] text-sm font-mono">
+              <p className="font-semibold mb-2 text-[#9FCC2E]">NO TICKETS FOUND</p>
+              <p className="text-sm font-mono text-[#5A6650]">
                 {searchQuery ? 'TRY ADJUSTING YOUR SEARCH QUERY' : 'TICKETS WILL APPEAR HERE WHEN CUSTOMERS CREATE THEM'}
               </p>
             </div>
@@ -270,7 +270,7 @@ export default function DashboardPage() {
             filteredTickets.map((ticket, index) => (
               <div
                 key={ticket.id}
-                className="group relative bg-linear-to-br from-[#0E402D]/30 to-[#000000] border border-[#295135]/50 rounded-xl p-6 transition-all duration-300 hover:border-[#9FCC2E]/50 hover:shadow-[0_0_30px_rgba(159,204,46,0.1)] cursor-pointer"
+                className="group relative rounded-xl p-6 transition-all duration-300 cursor-pointer border bg-linear-to-br from-[#0E402D]/30 to-[#000000] border-[#295135]/50 hover:border-[#9FCC2E]/50 hover:shadow-[0_0_30px_rgba(159,204,46,0.1)]"
                 onClick={() => router.push(`/tickets/${ticket.id}`)}
               >
                 <div className="absolute inset-0 bg-linear-to-br from-[#9FCC2E]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-xl" />
@@ -278,8 +278,8 @@ export default function DashboardPage() {
                   <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-3 mb-3 flex-wrap">
-                        <span className="text-[#5A6650] text-xs font-mono">#{String(index + 1).padStart(3, '0')}</span>
-                        <h3 className="text-lg font-semibold text-[#9FCC2E] truncate">
+                        <span className="text-xs font-mono text-[#5A6650]">#{String(index + 1).padStart(3, '0')}</span>
+                        <h3 className="text-lg font-semibold truncate text-[#9FCC2E]">
                           {ticket.aiAnalysis?.summary || ticket.initialMessage?.substring(0, 50) + '...'}
                         </h3>
                         <span className={`px-3 py-1 rounded-full text-xs font-mono border ${
@@ -298,10 +298,10 @@ export default function DashboardPage() {
                           </span>
                         )}
                       </div>
-                      <p className="text-[#5A6650] text-sm mb-3 font-mono">
+                      <p className="text-sm mb-3 font-mono text-[#5A6650]">
                         {ticket.senderName} • <span className="text-[#9FCC2E]/70">{ticket.senderEmail}</span>
                       </p>
-                      <div className="flex items-center text-xs text-[#5A6650] font-mono">
+                      <div className="flex items-center text-xs font-mono text-[#5A6650]">
                         <Clock className="w-3 h-3 mr-2 text-[#9FCC2E]" />
                         {ticket.createdAt?.toDate ? formatDistanceToNow(ticket.createdAt.toDate(), { addSuffix: true }).toUpperCase() : 'JUST NOW'}
                       </div>

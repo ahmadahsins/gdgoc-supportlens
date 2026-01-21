@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { api } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -91,7 +90,7 @@ export default function AnalyticsPage() {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#9FCC2E]"></div>
         </div>
       </DashboardLayout>
     );
@@ -100,19 +99,19 @@ export default function AnalyticsPage() {
   if (role !== 'admin') {
     return (
       <DashboardLayout>
-        <Card>
-          <CardContent className="py-16 text-center">
-            <div className="flex flex-col items-center space-y-4">
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
-                <Shield className="w-8 h-8 text-red-600" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Akses Ditolak</h2>
-                <p className="text-gray-600">Hanya admin yang dapat mengakses halaman Analytics.</p>
-              </div>
+        <div className="rounded-xl border p-16 text-center bg-gradient-to-br from-[#0E402D]/30 to-[#000000] border-[#295135]/50">
+          <div className="flex flex-col items-center space-y-4">
+            <div className="w-16 h-16 rounded-full flex items-center justify-center bg-red-500/20">
+              <Shield className="w-8 h-8 text-red-400" />
             </div>
-          </CardContent>
-        </Card>
+            <div>
+              <h2 className="text-2xl font-bold mb-2 text-[#9FCC2E]">Access Denied</h2>
+              <p className="text-[#5A6650]">
+                Only admin users can access the Analytics page.
+              </p>
+            </div>
+          </div>
+        </div>
       </DashboardLayout>
     );
   }
@@ -120,17 +119,15 @@ export default function AnalyticsPage() {
   if (error) {
     return (
       <DashboardLayout>
-        <Card>
-          <CardContent className="py-12 text-center">
-            <p className="text-gray-600">{error}</p>
-            <button 
-              onClick={loadAnalytics}
-              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            >
-              Retry
-            </button>
-          </CardContent>
-        </Card>
+        <div className="rounded-xl border p-12 text-center bg-gradient-to-br from-[#0E402D]/30 to-[#000000] border-[#295135]/50">
+          <p className="text-[#5A6650]">{error}</p>
+          <button 
+            onClick={loadAnalytics}
+            className="mt-4 px-4 py-2 rounded-md transition-colors bg-[#295135] text-[#9FCC2E] hover:bg-[#9FCC2E]/20"
+          >
+            Retry
+          </button>
+        </div>
       </DashboardLayout>
     );
   }
@@ -138,11 +135,9 @@ export default function AnalyticsPage() {
   if (!analytics) {
     return (
       <DashboardLayout>
-        <Card>
-          <CardContent className="py-12 text-center">
-            <p className="text-gray-600">No analytics data available</p>
-          </CardContent>
-        </Card>
+        <div className="rounded-xl border p-12 text-center bg-gradient-to-br from-[#0E402D]/30 to-[#000000] border-[#295135]/50">
+          <p className="text-[#5A6650]">No analytics data available</p>
+        </div>
       </DashboardLayout>
     );
   }
@@ -164,211 +159,225 @@ export default function AnalyticsPage() {
     ? ((analytics.closedTickets / analytics.totalTickets) * 100).toFixed(1)
     : 0;
 
+  const cardStyle = 'bg-gradient-to-br from-[#0E402D]/50 to-[#000000] border-[#295135]/50';
+
+  const chartTextColor = '#9FCC2E';
+  const chartGridColor = '#295135';
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
-          <p className="text-gray-500 mt-1">Overview of support ticket metrics and trends</p>
+          <h1 className="text-3xl font-bold tracking-wide text-[#9FCC2E]" style={{ textShadow: '0 0 20px rgba(159, 204, 46, 0.3)' }}>
+            ANALYTICS DASHBOARD
+          </h1>
+          <p className="mt-1 font-mono text-sm tracking-wider text-[#5A6650]">OVERVIEW OF SUPPORT TICKET METRICS AND TRENDS</p>
         </div>
 
         {/* Key Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Total Tickets</p>
-                  <p className="text-3xl font-bold text-gray-900 mt-2">
-                    {analytics.totalTickets}
-                  </p>
-                </div>
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                  <Activity className="w-6 h-6 text-blue-600" />
-                </div>
+          {/* Total Tickets */}
+          <div className={`rounded-xl p-6 border transition-all duration-300 hover:shadow-lg ${cardStyle}`}>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-[#5A6650]">Total Tickets</p>
+                <p className="text-3xl font-bold mt-2 text-[#9FCC2E]">
+                  {analytics.totalTickets}
+                </p>
               </div>
-            </CardContent>
-          </Card>
+              <div className="w-12 h-12 rounded-full flex items-center justify-center bg-[#9FCC2E]/20">
+                <Activity className="w-6 h-6 text-[#9FCC2E]" />
+              </div>
+            </div>
+          </div>
 
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Open Tickets</p>
-                  <p className="text-3xl font-bold text-orange-600 mt-2">
-                    {analytics.openTickets}
-                  </p>
-                </div>
-                <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-                  <TrendingUp className="w-6 h-6 text-orange-600" />
-                </div>
+          {/* Open Tickets */}
+          <div className={`rounded-xl p-6 border transition-all duration-300 hover:shadow-lg ${cardStyle}`}>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-[#5A6650]">Open Tickets</p>
+                <p className="text-3xl font-bold text-amber-500 mt-2">
+                  {analytics.openTickets}
+                </p>
               </div>
-            </CardContent>
-          </Card>
+              <div className="w-12 h-12 rounded-full flex items-center justify-center bg-amber-500/20">
+                <TrendingUp className="w-6 h-6 text-amber-400" />
+              </div>
+            </div>
+          </div>
 
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Resolution Rate</p>
-                  <p className="text-3xl font-bold text-green-600 mt-2">
-                    {resolutionRate}%
-                  </p>
-                </div>
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                  <TrendingDown className="w-6 h-6 text-green-600" />
-                </div>
+          {/* Resolution Rate */}
+          <div className={`rounded-xl p-6 border transition-all duration-300 hover:shadow-lg ${cardStyle}`}>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-[#5A6650]">Resolution Rate</p>
+                <p className="text-3xl font-bold text-emerald-500 mt-2">
+                  {resolutionRate}%
+                </p>
               </div>
-            </CardContent>
-          </Card>
+              <div className="w-12 h-12 rounded-full flex items-center justify-center bg-emerald-500/20">
+                <TrendingDown className="w-6 h-6 text-emerald-400" />
+              </div>
+            </div>
+          </div>
 
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Avg Response Time</p>
-                  <p className="text-3xl font-bold text-purple-600 mt-2">
-                    {analytics.avgResponseTime}h
-                  </p>
-                </div>
-                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                  <Clock className="w-6 h-6 text-purple-600" />
-                </div>
+          {/* Avg Response Time */}
+          <div className={`rounded-xl p-6 border transition-all duration-300 hover:shadow-lg ${cardStyle}`}>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-[#5A6650]">Avg Response Time</p>
+                <p className="text-3xl font-bold text-purple-500 mt-2">
+                  {analytics.avgResponseTime}h
+                </p>
               </div>
-            </CardContent>
-          </Card>
+              <div className="w-12 h-12 rounded-full flex items-center justify-center bg-purple-500/20">
+                <Clock className="w-6 h-6 text-purple-400" />
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Daily Tickets Trend */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Daily Tickets Trend</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={analytics.dailyTickets}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Line
-                    type="monotone"
-                    dataKey="count"
-                    stroke="#3b82f6"
-                    strokeWidth={2}
-                    name="Tickets"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+          <div className={`rounded-xl border p-6 ${cardStyle}`}>
+            <h3 className="text-lg font-semibold mb-4 text-[#9FCC2E]">Daily Tickets Trend</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={analytics.dailyTickets}>
+                <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} />
+                <XAxis dataKey="date" stroke={chartTextColor} fontSize={12} />
+                <YAxis stroke={chartTextColor} fontSize={12} />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: '#0E402D',
+                    border: '1px solid #295135',
+                    borderRadius: '8px',
+                    color: '#9FCC2E'
+                  }}
+                />
+                <Legend />
+                <Line
+                  type="monotone"
+                  dataKey="count"
+                  stroke="#9FCC2E"
+                  strokeWidth={2}
+                  name="Tickets"
+                  dot={{ fill: '#9FCC2E' }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
 
           {/* Sentiment Distribution */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Sentiment Distribution</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={sentimentData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name}: ${((percent ?? 0) * 100).toFixed(0)}%`}
-                    outerRadius={100}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {sentimentData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+          <div className={`rounded-xl border p-6 ${cardStyle}`}>
+            <h3 className="text-lg font-semibold mb-4 text-[#9FCC2E]">Sentiment Distribution</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={sentimentData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name}: ${((percent ?? 0) * 100).toFixed(0)}%`}
+                  outerRadius={100}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {sentimentData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: '#0E402D',
+                    border: '1px solid #295135',
+                    borderRadius: '8px',
+                    color: '#9FCC2E'
+                  }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
 
           {/* Priority Distribution */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Priority Distribution</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={priorityData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="value" name="Tickets">
-                    {priorityData.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={PRIORITY_COLORS[entry.name.toLowerCase() as keyof typeof PRIORITY_COLORS]}
-                      />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+          <div className={`rounded-xl border p-6 ${cardStyle}`}>
+            <h3 className="text-lg font-semibold mb-4 text-[#9FCC2E]">Priority Distribution</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={priorityData}>
+                <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} />
+                <XAxis dataKey="name" stroke={chartTextColor} fontSize={12} />
+                <YAxis stroke={chartTextColor} fontSize={12} />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: '#0E402D',
+                    border: '1px solid #295135',
+                    borderRadius: '8px',
+                    color: '#9FCC2E'
+                  }}
+                />
+                <Legend />
+                <Bar dataKey="value" name="Tickets">
+                  {priorityData.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={PRIORITY_COLORS[entry.name.toLowerCase() as keyof typeof PRIORITY_COLORS]}
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
 
           {/* Category Stats */}
           {analytics.categoryStats && analytics.categoryStats.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Tickets by Category</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={analytics.categoryStats} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" />
-                    <YAxis dataKey="category" type="category" width={100} />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="count" fill="#8b5cf6" name="Tickets" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
+            <div className={`rounded-xl border p-6 ${cardStyle}`}>
+              <h3 className="text-lg font-semibold mb-4 text-[#9FCC2E]">Tickets by Category</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={analytics.categoryStats} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} />
+                  <XAxis type="number" stroke={chartTextColor} fontSize={12} />
+                  <YAxis dataKey="category" type="category" width={100} stroke={chartTextColor} fontSize={12} />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: '#0E402D',
+                      border: '1px solid #295135',
+                      borderRadius: '8px',
+                      color: '#9FCC2E'
+                    }}
+                  />
+                  <Legend />
+                  <Bar dataKey="count" fill="#9FCC2E" name="Tickets" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           )}
         </div>
 
         {/* Summary Stats */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Summary Statistics</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              <div className="text-center">
-                <p className="text-2xl font-bold text-gray-900">{analytics.totalTickets}</p>
-                <p className="text-sm text-gray-600 mt-1">Total Tickets</p>
-              </div>
-              <div className="text-center">
-                <p className="text-2xl font-bold text-green-600">{analytics.closedTickets}</p>
-                <p className="text-sm text-gray-600 mt-1">Closed</p>
-              </div>
-              <div className="text-center">
-                <p className="text-2xl font-bold text-orange-600">{analytics.openTickets}</p>
-                <p className="text-sm text-gray-600 mt-1">Open</p>
-              </div>
-              <div className="text-center">
-                <p className="text-2xl font-bold text-purple-600">{resolutionRate}%</p>
-                <p className="text-sm text-gray-600 mt-1">Resolution Rate</p>
-              </div>
+        <div className={`rounded-xl border p-6 ${cardStyle}`}>
+          <h3 className="text-lg font-semibold mb-4 text-[#9FCC2E]">Summary Statistics</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-[#9FCC2E]">
+                {analytics.totalTickets}
+              </p>
+              <p className="text-sm mt-1 text-[#5A6650]">Total Tickets</p>
             </div>
-          </CardContent>
-        </Card>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-emerald-500">{analytics.closedTickets}</p>
+              <p className="text-sm mt-1 text-[#5A6650]">Closed</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-amber-500">{analytics.openTickets}</p>
+              <p className="text-sm mt-1 text-[#5A6650]">Open</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-bold text-purple-500">{resolutionRate}%</p>
+              <p className="text-sm mt-1 text-[#5A6650]">Resolution Rate</p>
+            </div>
+          </div>
+        </div>
       </div>
     </DashboardLayout>
   );
