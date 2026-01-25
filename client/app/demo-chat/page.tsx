@@ -29,7 +29,6 @@ const ParticleField = () => (
 export default function DemoChatPage() {
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
-  const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -38,7 +37,7 @@ export default function DemoChatPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!customerName || !customerEmail || !subject || !message) {
+    if (!customerName || !customerEmail || !message) {
       alert('Please fill in all fields');
       return;
     }
@@ -48,10 +47,10 @@ export default function DemoChatPage() {
       const response = await api.createTicket({
         name: customerName,
         email: customerEmail,
-        message: `${subject}\n\n${message}`,
+        message: message,
       });
       
-      setTicketId(response.data.id);
+      setTicketId(response.data.ticketId);
       setSubmitted(true);
     } catch (error) {
       console.error('Error creating ticket:', error);
@@ -64,7 +63,6 @@ export default function DemoChatPage() {
   const handleReset = () => {
     setCustomerName('');
     setCustomerEmail('');
-    setSubject('');
     setMessage('');
     setSubmitted(false);
     setTicketId('');
@@ -155,19 +153,6 @@ export default function DemoChatPage() {
                       className="bg-[#000000]/50 border-[#295135]/50 text-[#9FCC2E] placeholder:text-[#5A6650]/50 focus:border-[#9FCC2E]/50 focus:ring-[#9FCC2E]/20 h-10"
                     />
                   </div>
-                </div>
-
-                <div className="shrink-0">
-                  <label className="block text-[#5A6650] text-xs font-mono tracking-wider mb-2">
-                    SUBJECT *
-                  </label>
-                  <Input
-                    placeholder="Brief description of your issue"
-                    value={subject}
-                    onChange={(e) => setSubject(e.target.value)}
-                    required
-                    className="bg-[#000000]/50 border-[#295135]/50 text-[#9FCC2E] placeholder:text-[#5A6650]/50 focus:border-[#9FCC2E]/50 focus:ring-[#9FCC2E]/20 h-10"
-                  />
                 </div>
 
                 <div className="flex-1 flex flex-col min-h-0">
