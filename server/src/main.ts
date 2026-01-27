@@ -6,10 +6,15 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // CORS for public access
+  // CORS configuration
+  const corsOrigins = process.env.CORS_ORIGINS?.split(',').map(o => o.trim()) || [];
   app.enableCors({
-    origin: process.env.CORS_ORIGINS?.split(',') || '*',
+    origin: corsOrigins.length > 0 && corsOrigins[0] !== '*' 
+      ? corsOrigins 
+      : true, // 'true' reflects the request origin (safer than '*' with credentials)
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   });
 
   app.useGlobalPipes(
@@ -42,6 +47,6 @@ async function bootstrap() {
   const port = process.env.PORT ?? 3000;
   await app.listen(port, '0.0.0.0');
   console.log(`Application running on port ${port}`);
-  console.log(`Swagger docs available at /api`);
+  console.log(`Swagger docs available at /api-docs`);
 }
 bootstrap();

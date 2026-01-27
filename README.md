@@ -4,13 +4,13 @@ SupportLens adalah platform helpdesk cerdas yang memberdayakan tim Customer Supp
 
 ---
 
-## � Live Demo
+## 🔗 Live Demo
 
 | Service | URL |
 |---------|-----|
+| **Frontend App** | [https://supportlens.vercel.app](https://supportlens.vercel.app) |
 | **Backend API** | [https://api.supportlens.cloud](https://api.supportlens.cloud) |
 | **API Documentation** | [https://api.supportlens.cloud/api-docs](https://api.supportlens.cloud/api-docs) |
-| **Frontend** | *Coming Soon* |
 
 ---
 
@@ -192,8 +192,8 @@ API Documentation tersedia via Swagger UI:
 
 | Service | Platform | URL |
 |---------|----------|-----|
+| **Frontend App** | Vercel | [https://supportlens.vercel.app](https://supportlens.vercel.app) |
 | **Backend API** | VPS (Rumahweb) via Docker | [https://api.supportlens.cloud](https://api.supportlens.cloud) |
-| **Frontend** | Vercel | *Coming Soon* |
 
 ### Deployment Stack (Backend)
 - Docker + Docker Compose
