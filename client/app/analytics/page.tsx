@@ -327,7 +327,7 @@ export default function AnalyticsPage() {
                       borderRadius: '8px',
                       color: '#9FCC2E'
                     }}
-                    formatter={(value: number) => [`${value} tickets`, 'Count']}
+                    formatter={(value) => [`${value ?? 0} tickets`, 'Count']}
                   />
                   <Legend 
                     formatter={(value) => <span style={{ color: '#9FCC2E' }}>{value}</span>}
